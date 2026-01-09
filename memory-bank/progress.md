@@ -29,8 +29,8 @@
 - [x] Pushed to GitHub: https://github.com/BenjaDuhart14/Daruma
 
 ## What's In Progress
-- [ ] Make repo public on GitHub
-- [ ] Deploy to Streamlit Cloud
+- [x] Make repo public on GitHub
+- [x] Deploy to Streamlit Cloud - https://daruma14.streamlit.app/
 
 ## What's Left to Build
 - [ ] Configure GitHub Actions secrets (SUPABASE_URL, SUPABASE_KEY)
@@ -51,7 +51,7 @@
 ## Key URLs
 - **GitHub Repo**: https://github.com/BenjaDuhart14/Daruma
 - **Supabase Project**: https://pvxetjsadcgaeeqmauzz.supabase.co
-- **Streamlit Cloud**: (pending deployment)
+- **Streamlit Cloud**: https://daruma14.streamlit.app/
 
 ## Evolution of Decisions
 | Date | Decision | Rationale |
