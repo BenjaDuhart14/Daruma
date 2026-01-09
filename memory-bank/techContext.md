@@ -1,5 +1,26 @@
 # Technical Context: Daruma
 
+## SECURITY WARNING - PUBLIC REPOSITORY
+
+**This repository is PUBLIC.** Never commit any of the following:
+- `.env` files with real credentials
+- API keys or tokens (Supabase, GitHub, etc.)
+- Passwords or secrets of any kind
+- Personal data or sensitive information
+
+**Safe to commit:**
+- `.env.example` with placeholder values only
+- Code files
+- Documentation
+- SQL schema (structure only, no data)
+
+**Credentials are stored in:**
+- Local `.env` file (excluded by .gitignore)
+- Streamlit Cloud Secrets (for deployment)
+- GitHub Actions Secrets (for automated workflows)
+
+---
+
 ## Technology Stack
 
 ### Frontend
