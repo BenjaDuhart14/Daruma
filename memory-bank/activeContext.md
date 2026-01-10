@@ -1,30 +1,56 @@
 # Active Context: Daruma
 
 ## Current Focus
-App deployed and connected to Supabase. Waiting for Delta CSV import. Planning user authentication system.
+UI redesign complete with Alpine Dusk theme. Authentication implemented. Ready for mobile testing on iPhone and Delta CSV data import.
 
-## Recent Changes
-- Project fully initialized with all files
-- All Streamlit UI pages created based on Delta app screenshots
-- UI connected to real Supabase data (no more mock data)
-- Backend scripts ready (update_prices.py, import_delta_csv.py)
-- Supabase database created and schema.sql executed
-- GitHub Actions configured and running (price updates every 4 hours)
-- Deployed to Streamlit Cloud: https://daruma14.streamlit.app/
-- Repository is PUBLIC
+## Recent Changes (This Session - January 2026)
+1. **Authentication System Implemented**
+   - Created `src/utils/auth.py` with styled login page
+   - Floating logo with aurora glow animation
+   - Email/password auth via Streamlit secrets
+   - All pages protected with `check_password()`
+   - Logout button in sidebar
+
+2. **Alpine Dusk Theme Created**
+   - New design system in `src/utils/styles.py` (700+ lines)
+   - Deep purple-to-navy gradient backgrounds
+   - Mountain silhouette visual effect
+   - Glassmorphism cards with purple borders
+   - JetBrains Mono for numbers, Plus Jakarta Sans for text
+   - Green/red semantic colors for gains/losses
+
+3. **All Pages Redesigned**
+   - `app.py` - Dashboard with metric cards, portfolio chart
+   - `1_Holdings.py` - With company/crypto logos from APIs
+   - `2_Performance.py` - Charts with high/low markers
+   - `3_Dividends.py` - Green-themed dividend tracking
+   - `4_Add_Transaction.py` - Styled form with live calculations
+   - `5_Import.py` - Step-by-step import wizard
+
+4. **Company/Crypto Logos Added**
+   - Stocks/ETFs: Financial Modeling Prep API
+   - Crypto: CoinGecko CDN with ticker mapping
+   - Fallback to letter initials if logo fails
+
+5. **Bug Fixes**
+   - Fixed dropdown z-index (was being cut off by cards below)
 
 ## Completed Steps
 1. [x] Create Supabase project and run schema.sql
 2. [x] Add Supabase credentials to .env
-3. [x] Test locally (streamlit runs successfully)
+3. [x] Test locally
 4. [x] Push to GitHub (public repo)
-5. [x] Make repo public on GitHub
-6. [x] Deploy to Streamlit Cloud
-7. [x] Configure GitHub Actions secrets
-8. [x] Connect UI to real Supabase data
-9. [x] Verify automated price updates
-10. [ ] Import Delta CSV data
-11. [ ] Add user authentication (protect portfolio privacy)
+5. [x] Deploy to Streamlit Cloud
+6. [x] Configure GitHub Actions secrets
+7. [x] Connect UI to real Supabase data
+8. [x] Verify automated price updates
+9. [x] **Implement user authentication**
+10. [x] **Redesign UI with Alpine Dusk theme**
+11. [x] **Add company/crypto logos**
+12. [x] **Push updates to GitHub**
+13. [ ] Configure secrets on Streamlit Cloud
+14. [ ] Test on iPhone
+15. [ ] Import Delta CSV data
 
 ## Active Decisions
 
@@ -32,15 +58,16 @@ App deployed and connected to Supabase. Waiting for Delta CSV import. Planning u
 - Stack: Streamlit + Supabase + GitHub Actions + yfinance
 - All free tiers
 - USD as base currency
-- Automatic dividend calculation (not manual)
-- Dark theme for UI (matching Delta app)
-- UI design: Delta-inspired with dark theme, green/red for gains/losses
+- Automatic dividend calculation
+- **Single-user authentication** (email/password in Streamlit secrets)
+- **Alpine Dusk theme** (dark purple gradient, glassmorphism)
+- **Mobile-first design** (optimized for iPhone)
 - Repository is PUBLIC (required for Streamlit Cloud free tier)
 
 ### Pending
-- User authentication system (Supabase Auth)
-- Row Level Security (RLS) for multi-user support
-- UI improvements based on user feedback
+- Fine-tuning mobile responsiveness based on iPhone testing
+- Portfolio allocation pie chart
+- Performance vs benchmark comparison
 
 ## Important Patterns
 - Follow minimal intervention principle
@@ -49,18 +76,37 @@ App deployed and connected to Supabase. Waiting for Delta CSV import. Planning u
 - Document path not taken
 - Ask for visual references before design changes
 - **NEVER commit credentials to public repo**
+- Use `apply_styles()` at top of each page
+- Use `check_password()` before any page content
 
-## Learnings This Session
-- WSL path: Windows `C:\Users\...` maps to `/mnt/c/Users/...`
-- Streamlit Cloud requires public repo for free tier
-- GitHub PAT needs `workflow` scope to push GitHub Actions files
-- pip install on modern Debian needs `--break-system-packages` flag
-- Git user config needed: name + email (use GitHub noreply email for privacy)
+## Key Files Modified This Session
+```
+src/utils/auth.py        # NEW - Authentication + login page
+src/utils/styles.py      # NEW - Alpine Dusk design system
+src/app.py               # Redesigned dashboard
+src/pages/1_Holdings.py  # Added logos, new styling
+src/pages/2_Performance.py
+src/pages/3_Dividends.py
+src/pages/4_Add_Transaction.py
+src/pages/5_Import.py
+```
 
 ## Current Session Notes
-- Full project structure complete
-- UI connected to real Supabase data
-- App deployed at https://daruma14.streamlit.app/
-- GitHub Actions running price updates every 4 hours
-- Security verified: no credentials in repo
-- Next priority: User authentication for privacy
+- Commit `15f8aed`: "feat: Complete UI redesign with Alpine Dusk theme"
+- All changes pushed to GitHub
+- Streamlit Cloud should auto-deploy from main branch
+- User needs to configure auth secrets before testing live
+- Design inspired by reference fintech dashboard image
+
+## Next Actions
+1. **Configure Streamlit Cloud secrets** (email/password for auth)
+2. **Test on iPhone** (verify mobile responsiveness)
+3. **Import Delta CSV data** (populate real portfolio)
+4. Gather feedback on mobile UX
+5. Iterate on design if needed
+
+## Key URLs
+- **GitHub Repo**: https://github.com/BenjaDuhart14/Daruma
+- **Supabase Project**: https://pvxetjsadcgaeeqmauzz.supabase.co
+- **Streamlit Cloud**: https://daruma14.streamlit.app/
+- **GitHub Actions**: https://github.com/BenjaDuhart14/Daruma/actions
