@@ -8,6 +8,10 @@ import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime, timedelta
 import pandas as pd
+import numpy as np
+
+# Import Supabase client
+from utils import supabase_client as db
 
 # Page config
 st.set_page_config(
@@ -137,44 +141,91 @@ if 'selected_filters' not in st.session_state:
     st.session_state.selected_filters = []
 
 
-def get_mock_data():
-    """Return mock data for UI development. Replace with Supabase calls."""
-    return {
-        'total_value': 81889.40,
-        'total_cost': 75000.00,
-        'daily_change': 339.93,
-        'daily_change_pct': 0.42,
-        'holdings': [
-            {'ticker': 'VOO', 'name': 'Vanguard S&P 500 ETF', 'shares': 28.18, 'avg_price': 637.14, 'current_value': 17956.96, 'daily_change': 86.53, 'daily_pct': 0.48, 'type': 'FUND'},
-            {'ticker': 'AMZN', 'name': 'Amazon', 'shares': 31.39, 'avg_price': 245.93, 'current_value': 7719.56, 'daily_change': -11.30, 'daily_pct': -0.15, 'type': 'STOCK'},
-            {'ticker': 'QQQM', 'name': 'Invesco NASDAQ 100', 'shares': 21.01, 'avg_price': 257.28, 'current_value': 5406.04, 'daily_change': 38.45, 'daily_pct': 0.72, 'type': 'FUND'},
-            {'ticker': 'TSLA', 'name': 'Tesla', 'shares': 12.19, 'avg_price': 442.71, 'current_value': 5397.36, 'daily_change': 84.24, 'daily_pct': 1.59, 'type': 'STOCK'},
-            {'ticker': 'ARKK', 'name': 'ARK Innovation ETF', 'shares': 60, 'avg_price': 80.67, 'current_value': 4840.20, 'daily_change': 4.80, 'daily_pct': 0.10, 'type': 'FUND'},
-            {'ticker': 'ETH', 'name': 'Ethereum', 'shares': 1.4897, 'avg_price': 3124.89, 'current_value': 4655.09, 'daily_change': 39.09, 'daily_pct': 0.85, 'type': 'CRYPTO'},
-            {'ticker': 'BTC', 'name': 'Bitcoin', 'shares': 0.05, 'avg_price': 45000, 'current_value': 4750.00, 'daily_change': 125.00, 'daily_pct': 2.70, 'type': 'CRYPTO'},
-        ]
-    }
+@st.cache_data(ttl=300)  # Cache for 5 minutes
+def get_portfolio_data():
+    """Fetch real portfolio data from Supabase."""
+    try:
+        client = db.get_client()
+
+        # Get holdings with current value
+        holdings_raw = db.get_holdings_with_value(client)
+
+        # Get portfolio summary
+        summary = db.get_portfolio_summary(client)
+
+        # Transform holdings to expected format
+        holdings = []
+        for h in holdings_raw:
+            holdings.append({
+                'ticker': h['ticker'],
+                'name': h['name'] or h['ticker'],
+                'shares': float(h['shares'] or 0),
+                'avg_price': float(h['avg_buy_price'] or 0),
+                'current_value': float(h['current_value'] or 0),
+                'current_price': float(h['current_price'] or 0),
+                'pnl': float(h['pnl'] or 0),
+                'pnl_pct': float(h['pnl_percent'] or 0),
+                'type': h['asset_type'] or 'STOCK'
+            })
+
+        return {
+            'total_value': float(summary.get('total_value') or 0),
+            'total_cost': float(summary.get('total_invested') or 0),
+            'total_pnl': float(summary.get('total_pnl') or 0),
+            'total_pnl_pct': float(summary.get('total_pnl_percent') or 0),
+            'holdings': holdings,
+            'connected': True
+        }
+    except Exception as e:
+        st.error(f"Database connection error: {str(e)}")
+        return {
+            'total_value': 0,
+            'total_cost': 0,
+            'total_pnl': 0,
+            'total_pnl_pct': 0,
+            'holdings': [],
+            'connected': False
+        }
 
 
-def create_portfolio_chart(period: str):
+@st.cache_data(ttl=300)
+def get_portfolio_history(days: int = 365):
+    """Fetch portfolio snapshots for chart."""
+    try:
+        client = db.get_client()
+        snapshots = db.get_portfolio_snapshots(client, days=days)
+        return snapshots
+    except Exception:
+        return []
+
+
+def create_portfolio_chart(period: str, current_value: float = 0):
     """Create portfolio evolution line chart."""
-    # Mock data - replace with actual price history
-    days = {'1H': 0.04, '1D': 1, '1W': 7, '1M': 30, '3M': 90, 'YTD': 180, '1Y': 365, 'ALL': 730}
-    num_points = max(20, int(days.get(period, 30) * 2))
+    # Days to fetch for each period
+    days_map = {'1H': 1, '1D': 1, '1W': 7, '1M': 30, '3M': 90, 'YTD': 180, '1Y': 365, 'ALL': 730}
+    days = days_map.get(period, 30)
 
-    dates = pd.date_range(end=datetime.now(), periods=num_points, freq='H' if period == '1H' else 'D')
+    # Try to get real data
+    snapshots = get_portfolio_history(days)
 
-    # Simulated values with some variation
-    import numpy as np
-    np.random.seed(42)
-    base = 81000
-    values = base + np.cumsum(np.random.randn(num_points) * 200)
-    values[-1] = 81889.40  # End at current value
+    if snapshots and len(snapshots) > 1:
+        # Use real data
+        dates = pd.to_datetime([s['snapshot_date'] for s in snapshots])
+        values = np.array([float(s['total_value']) for s in snapshots])
+    else:
+        # Fallback: show single point or placeholder
+        if current_value > 0:
+            dates = pd.date_range(end=datetime.now(), periods=2, freq='D')
+            values = np.array([current_value * 0.98, current_value])
+        else:
+            # No data at all
+            dates = pd.date_range(end=datetime.now(), periods=2, freq='D')
+            values = np.array([0, 0])
 
     fig = go.Figure()
 
     # Determine color based on trend
-    color = '#4CAF50' if values[-1] >= values[0] else '#F44336'
+    color = '#4CAF50' if len(values) < 2 or values[-1] >= values[0] else '#F44336'
 
     fig.add_trace(go.Scatter(
         x=dates,
@@ -186,16 +237,17 @@ def create_portfolio_chart(period: str):
         hovertemplate='$%{y:,.2f}<extra></extra>'
     ))
 
-    # Add min/max annotations
-    max_val = max(values)
-    min_val = min(values)
-    max_idx = list(values).index(max_val)
-    min_idx = list(values).index(min_val)
+    # Add min/max annotations if we have enough data
+    if len(values) > 1:
+        max_val = max(values)
+        min_val = min(values)
+        max_idx = list(values).index(max_val)
+        min_idx = list(values).index(min_val)
 
-    fig.add_annotation(x=dates[max_idx], y=max_val, text=f'${max_val:,.2f}',
-                      showarrow=False, yshift=15, font=dict(size=11, color='#888'))
-    fig.add_annotation(x=dates[min_idx], y=min_val, text=f'${min_val:,.2f}',
-                      showarrow=False, yshift=-15, font=dict(size=11, color='#888'))
+        fig.add_annotation(x=dates[max_idx], y=max_val, text=f'${max_val:,.2f}',
+                          showarrow=False, yshift=15, font=dict(size=11, color='#888'))
+        fig.add_annotation(x=dates[min_idx], y=min_val, text=f'${min_val:,.2f}',
+                          showarrow=False, yshift=-15, font=dict(size=11, color='#888'))
 
     fig.update_layout(
         plot_bgcolor='#0E1117',
@@ -212,15 +264,15 @@ def create_portfolio_chart(period: str):
 
 
 def create_movers_chart(holdings: list, top_n: int = 5, show_gainers: bool = True):
-    """Create bar chart for top gainers or losers."""
-    sorted_holdings = sorted(holdings, key=lambda x: x['daily_pct'], reverse=show_gainers)
+    """Create bar chart for top gainers or losers by P&L %."""
+    sorted_holdings = sorted(holdings, key=lambda x: x['pnl_pct'], reverse=show_gainers)
 
     if show_gainers:
-        movers = [h for h in sorted_holdings if h['daily_pct'] > 0][:top_n]
+        movers = [h for h in sorted_holdings if h['pnl_pct'] > 0][:top_n]
         color = '#4CAF50'
     else:
-        movers = [h for h in sorted_holdings if h['daily_pct'] < 0][:top_n]
-        movers = sorted(movers, key=lambda x: x['daily_pct'])  # Most negative first
+        movers = [h for h in sorted_holdings if h['pnl_pct'] < 0][:top_n]
+        movers = sorted(movers, key=lambda x: x['pnl_pct'])  # Most negative first
         color = '#F44336'
 
     if not movers:
@@ -230,9 +282,9 @@ def create_movers_chart(holdings: list, top_n: int = 5, show_gainers: bool = Tru
 
     fig.add_trace(go.Bar(
         x=[m['ticker'] for m in movers],
-        y=[abs(m['daily_pct']) for m in movers],
+        y=[abs(m['pnl_pct']) for m in movers],
         marker_color=color,
-        text=[f"{'+' if m['daily_pct'] > 0 else ''}{m['daily_pct']:.2f}%" for m in movers],
+        text=[f"{'+' if m['pnl_pct'] > 0 else ''}{m['pnl_pct']:.1f}%" for m in movers],
         textposition='outside',
         textfont=dict(color=color, size=12)
     ))
@@ -253,10 +305,14 @@ def create_movers_chart(holdings: list, top_n: int = 5, show_gainers: bool = Tru
 
 # Main app
 def main():
-    data = get_mock_data()
+    data = get_portfolio_data()
 
     # Header
     st.markdown("### Portfolios")
+
+    # Show connection status
+    if not data['connected']:
+        st.warning("Not connected to database. Please check your Supabase credentials.")
 
     # Asset type filters
     col1, col2, col3, col4 = st.columns([1, 1, 1, 3])
@@ -274,16 +330,16 @@ def main():
 
     col1, col2 = st.columns([3, 1])
     with col1:
-        change_class = "gain" if data['daily_change'] >= 0 else "loss"
-        sign = "+" if data['daily_change'] >= 0 else ""
+        change_class = "gain" if data['total_pnl'] >= 0 else "loss"
+        sign = "+" if data['total_pnl'] >= 0 else ""
 
         st.markdown(f"""
         <p class="big-value">{data['total_value']:,.2f}<span class="currency-label">USD</span></p>
-        <p class="{change_class}">{sign}{data['daily_change']:,.2f} {sign}{data['daily_change_pct']:.2f}%</p>
+        <p class="{change_class}">{sign}{data['total_pnl']:,.2f} ({sign}{data['total_pnl_pct']:.2f}%)</p>
         """, unsafe_allow_html=True)
 
     # Portfolio chart
-    chart = create_portfolio_chart(st.session_state.selected_period)
+    chart = create_portfolio_chart(st.session_state.selected_period, data['total_value'])
     st.plotly_chart(chart, use_container_width=True, config={'displayModeBar': False})
 
     # Period selector
@@ -299,51 +355,57 @@ def main():
 
     st.markdown("---")
 
-    # Daily movers section
-    st.markdown('<p class="section-title">PERMANECE EN LA CIMA</p>', unsafe_allow_html=True)
+    # P&L movers section
+    st.markdown('<p class="section-title">PERFORMANCE</p>', unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    if data['holdings']:
+        col1, col2 = st.columns(2)
 
-    with col1:
-        st.markdown("**Top Gainers**")
-        gainers_chart = create_movers_chart(data['holdings'], show_gainers=True)
-        if gainers_chart:
-            st.plotly_chart(gainers_chart, use_container_width=True, config={'displayModeBar': False})
-        else:
-            st.info("No gainers today")
+        with col1:
+            st.markdown("**Top Gainers**")
+            gainers_chart = create_movers_chart(data['holdings'], show_gainers=True)
+            if gainers_chart:
+                st.plotly_chart(gainers_chart, use_container_width=True, config={'displayModeBar': False})
+            else:
+                st.info("No gainers yet")
 
-    with col2:
-        st.markdown("**Top Losers**")
-        losers_chart = create_movers_chart(data['holdings'], show_gainers=False)
-        if losers_chart:
-            st.plotly_chart(losers_chart, use_container_width=True, config={'displayModeBar': False})
-        else:
-            st.info("No losers today")
+        with col2:
+            st.markdown("**Top Losers**")
+            losers_chart = create_movers_chart(data['holdings'], show_gainers=False)
+            if losers_chart:
+                st.plotly_chart(losers_chart, use_container_width=True, config={'displayModeBar': False})
+            else:
+                st.info("No losers yet")
+    else:
+        st.info("No holdings to display. Import your Delta CSV to get started!")
 
     st.markdown("---")
 
     # Quick holdings preview
     st.markdown('<p class="section-title">TOP HOLDINGS</p>', unsafe_allow_html=True)
 
-    # Sort by value
-    sorted_holdings = sorted(data['holdings'], key=lambda x: x['current_value'], reverse=True)[:5]
+    if data['holdings']:
+        # Sort by value
+        sorted_holdings = sorted(data['holdings'], key=lambda x: x['current_value'], reverse=True)[:5]
 
-    for h in sorted_holdings:
-        col1, col2, col3 = st.columns([2, 2, 2])
+        for h in sorted_holdings:
+            col1, col2, col3 = st.columns([2, 2, 2])
 
-        with col1:
-            st.markdown(f"**{h['ticker']}**")
-            st.caption(f"{h['shares']:.2f} | ${h['avg_price']:,.2f}")
+            with col1:
+                st.markdown(f"**{h['ticker']}**")
+                st.caption(f"{h['shares']:.4f} @ ${h['avg_price']:,.2f}")
 
-        with col2:
-            st.markdown(f"${h['current_value']:,.2f}")
+            with col2:
+                st.markdown(f"${h['current_value']:,.2f}")
 
-        with col3:
-            change_color = "green" if h['daily_pct'] >= 0 else "red"
-            sign = "+" if h['daily_pct'] >= 0 else ""
-            st.markdown(f":{change_color}[{sign}${h['daily_change']:,.2f} {sign}{h['daily_pct']:.2f}%]")
+            with col3:
+                change_color = "green" if h['pnl_pct'] >= 0 else "red"
+                sign = "+" if h['pnl_pct'] >= 0 else ""
+                st.markdown(f":{change_color}[{sign}${h['pnl']:,.2f} ({sign}{h['pnl_pct']:.1f}%)]")
 
-        st.markdown("---")
+            st.markdown("---")
+    else:
+        st.info("No holdings yet. Go to Import page to add your transactions.")
 
 
 if __name__ == "__main__":

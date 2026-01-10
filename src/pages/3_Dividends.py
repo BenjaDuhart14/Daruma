@@ -6,6 +6,8 @@ import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
+from datetime import datetime
+from utils import supabase_client as db
 
 st.set_page_config(
     page_title="Dividends - Daruma",
@@ -25,36 +27,79 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-def get_mock_dividends():
-    """Mock dividend data - replace with Supabase calls."""
-    return {
-        'total': 1245.67,
-        'this_year': 425.30,
-        'by_year': [
-            {'year': 2024, 'amount': 425.30},
-            {'year': 2023, 'amount': 520.37},
-            {'year': 2022, 'amount': 300.00},
-        ],
-        'by_ticker': [
-            {'ticker': 'VOO', 'amount': 456.20, 'payments': 8},
-            {'ticker': 'QQQM', 'amount': 234.50, 'payments': 4},
-            {'ticker': 'AAPL', 'amount': 189.30, 'payments': 4},
-            {'ticker': 'COST', 'amount': 145.67, 'payments': 4},
-            {'ticker': 'GOOGL', 'amount': 120.00, 'payments': 2},
-            {'ticker': 'AMZN', 'amount': 100.00, 'payments': 2},
-        ],
-        'recent': [
-            {'date': '2024-12-15', 'ticker': 'VOO', 'amount': 58.40},
-            {'date': '2024-12-10', 'ticker': 'AAPL', 'amount': 12.35},
-            {'date': '2024-11-15', 'ticker': 'QQQM', 'amount': 45.20},
-            {'date': '2024-11-01', 'ticker': 'COST', 'amount': 38.50},
-            {'date': '2024-10-15', 'ticker': 'VOO', 'amount': 55.80},
-        ]
-    }
+@st.cache_data(ttl=300)
+def get_dividend_data():
+    """Fetch dividend data from Supabase."""
+    try:
+        client = db.get_client()
+
+        # Get all dividends for recent list
+        all_dividends = db.get_dividends(client)
+
+        # Get dividends by year
+        by_year_raw = db.get_dividends_by_year(client)
+
+        # Get dividend summary by ticker
+        by_ticker_raw = db.get_dividend_summary(client)
+
+        # Process by year (aggregate all tickers per year)
+        year_totals = {}
+        for d in by_year_raw:
+            year = d['year']
+            if year not in year_totals:
+                year_totals[year] = 0
+            year_totals[year] += float(d['total_received'] or 0)
+
+        by_year = [{'year': y, 'amount': a} for y, a in sorted(year_totals.items(), reverse=True)]
+
+        # Process by ticker
+        by_ticker = []
+        for d in by_ticker_raw:
+            by_ticker.append({
+                'ticker': d['ticker'],
+                'amount': float(d['total_dividends'] or 0),
+                'payments': d['dividend_count'] or 0
+            })
+
+        # Calculate totals
+        total = sum(d['amount'] for d in by_ticker)
+        current_year = datetime.now().year
+        this_year = year_totals.get(current_year, 0)
+
+        # Recent dividends (last 10)
+        recent = []
+        for d in all_dividends[:10]:
+            recent.append({
+                'date': d['payment_date'],
+                'ticker': d['ticker'],
+                'amount': float(d['total_received'] or 0)
+            })
+
+        return {
+            'total': total,
+            'this_year': this_year,
+            'by_year': by_year,
+            'by_ticker': by_ticker,
+            'recent': recent,
+            'connected': True
+        }
+    except Exception as e:
+        st.error(f"Error loading dividends: {str(e)}")
+        return {
+            'total': 0,
+            'this_year': 0,
+            'by_year': [],
+            'by_ticker': [],
+            'recent': [],
+            'connected': False
+        }
 
 
 def create_yearly_chart(by_year: list):
     """Create bar chart for dividends by year."""
+    if not by_year:
+        return None
+
     fig = go.Figure()
 
     fig.add_trace(go.Bar(
@@ -81,8 +126,11 @@ def create_yearly_chart(by_year: list):
 
 def create_ticker_chart(by_ticker: list):
     """Create horizontal bar chart for dividends by ticker."""
+    if not by_ticker:
+        return None
+
     # Sort by amount
-    by_ticker = sorted(by_ticker, key=lambda x: x['amount'], reverse=True)
+    by_ticker = sorted(by_ticker, key=lambda x: x['amount'], reverse=True)[:10]
 
     fig = go.Figure()
 
@@ -112,7 +160,10 @@ def create_ticker_chart(by_ticker: list):
 def main():
     st.markdown("### Dividendos")
 
-    data = get_mock_dividends()
+    data = get_dividend_data()
+
+    if not data['connected']:
+        st.warning("Not connected to database.")
 
     # Summary metrics
     col1, col2, col3 = st.columns(3)
@@ -124,10 +175,14 @@ def main():
         st.metric("Este Ano", f"${data['this_year']:,.2f}")
 
     with col3:
-        avg_monthly = data['this_year'] / 12
+        avg_monthly = data['this_year'] / 12 if data['this_year'] > 0 else 0
         st.metric("Promedio Mensual", f"${avg_monthly:,.2f}")
 
     st.markdown("---")
+
+    if not data['by_year'] and not data['by_ticker']:
+        st.info("No dividend data yet. Dividends will be calculated automatically once you have holdings with dividend-paying stocks.")
+        return
 
     # Charts side by side
     col1, col2 = st.columns(2)
@@ -135,38 +190,46 @@ def main():
     with col1:
         st.markdown("#### Por Ano")
         yearly_chart = create_yearly_chart(data['by_year'])
-        st.plotly_chart(yearly_chart, use_container_width=True, config={'displayModeBar': False})
+        if yearly_chart:
+            st.plotly_chart(yearly_chart, use_container_width=True, config={'displayModeBar': False})
+        else:
+            st.info("No yearly data")
 
     with col2:
         st.markdown("#### Por Activo")
         ticker_chart = create_ticker_chart(data['by_ticker'])
-        st.plotly_chart(ticker_chart, use_container_width=True, config={'displayModeBar': False})
+        if ticker_chart:
+            st.plotly_chart(ticker_chart, use_container_width=True, config={'displayModeBar': False})
+        else:
+            st.info("No ticker data")
 
     st.markdown("---")
 
     # Recent dividends
-    st.markdown("#### Pagos Recientes")
+    if data['recent']:
+        st.markdown("#### Pagos Recientes")
 
-    for div in data['recent']:
-        col1, col2, col3 = st.columns([2, 2, 2])
+        for div in data['recent']:
+            col1, col2, col3 = st.columns([2, 2, 2])
 
-        with col1:
-            st.markdown(f"**{div['ticker']}**")
+            with col1:
+                st.markdown(f"**{div['ticker']}**")
 
-        with col2:
-            st.caption(div['date'])
+            with col2:
+                st.caption(div['date'])
 
-        with col3:
-            st.markdown(f":green[+${div['amount']:,.2f}]")
+            with col3:
+                st.markdown(f":green[+${div['amount']:,.2f}]")
 
-        st.markdown("---")
+            st.markdown("---")
 
     # Full table
-    with st.expander("Ver todos los dividendos por activo"):
-        df = pd.DataFrame(data['by_ticker'])
-        df['amount'] = df['amount'].apply(lambda x: f"${x:,.2f}")
-        df.columns = ['Ticker', 'Total Recibido', 'Pagos']
-        st.dataframe(df, use_container_width=True, hide_index=True)
+    if data['by_ticker']:
+        with st.expander("Ver todos los dividendos por activo"):
+            df = pd.DataFrame(data['by_ticker'])
+            df['amount'] = df['amount'].apply(lambda x: f"${x:,.2f}")
+            df.columns = ['Ticker', 'Total Recibido', 'Pagos']
+            st.dataframe(df, use_container_width=True, hide_index=True)
 
 
 if __name__ == "__main__":

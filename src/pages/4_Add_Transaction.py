@@ -4,6 +4,7 @@ Add Transaction Page - Manual transaction entry
 
 import streamlit as st
 from datetime import datetime, date
+from utils import supabase_client as db
 
 st.set_page_config(
     page_title="Add Transaction - Daruma",
@@ -23,16 +24,41 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+@st.cache_data(ttl=60)
 def get_existing_tickers():
-    """Get list of existing tickers for autocomplete - replace with Supabase call."""
-    return ['VOO', 'AMZN', 'QQQM', 'TSLA', 'ARKK', 'ETH', 'BTC', 'COST', 'AAPL', 'GOOGL']
+    """Get list of existing tickers for autocomplete."""
+    try:
+        client = db.get_client()
+        return db.get_unique_tickers(client)
+    except Exception:
+        return []
+
+
+@st.cache_data(ttl=60)
+def get_recent_transactions():
+    """Get recent transactions for display."""
+    try:
+        client = db.get_client()
+        transactions = db.get_all_transactions(client)
+        return transactions[:5]  # Last 5
+    except Exception:
+        return []
 
 
 def save_transaction(transaction: dict) -> bool:
-    """Save transaction to database - replace with Supabase call."""
-    # Mock save - replace with actual Supabase insert
-    st.session_state['last_transaction'] = transaction
-    return True
+    """Save transaction to Supabase."""
+    try:
+        client = db.get_client()
+        result = db.insert_transaction(client, transaction)
+        if result:
+            # Clear caches to show new data
+            get_existing_tickers.clear()
+            get_recent_transactions.clear()
+            return True
+        return False
+    except Exception as e:
+        st.error(f"Error saving transaction: {str(e)}")
+        return False
 
 
 def main():
@@ -60,10 +86,10 @@ def main():
             ).upper()
 
             # Show suggestions if partial match
-            if ticker and len(ticker) >= 1:
+            if ticker and len(ticker) >= 1 and existing_tickers:
                 suggestions = [t for t in existing_tickers if ticker in t]
                 if suggestions and ticker not in suggestions:
-                    st.caption(f"Sugerencias: {', '.join(suggestions)}")
+                    st.caption(f"Sugerencias: {', '.join(suggestions[:5])}")
 
             # Asset name (optional)
             name = st.text_input(
@@ -167,7 +193,7 @@ def main():
             else:
                 # Create transaction dict
                 transaction = {
-                    'date': tx_date.isoformat(),
+                    'date': datetime.combine(tx_date, datetime.min.time()).isoformat(),
                     'ticker': ticker,
                     'name': name if name else None,
                     'type': tx_type,
@@ -183,18 +209,32 @@ def main():
                 # Save
                 if save_transaction(transaction):
                     st.success(f"Transaccion guardada: {tx_type} {quantity:.4f} {ticker} @ ${price:,.4f}")
-
-                    # Show summary
-                    st.markdown("---")
-                    st.markdown("#### Resumen")
-                    st.json(transaction)
-                else:
-                    st.error("Error al guardar la transaccion")
+                    st.rerun()  # Refresh to show new transaction
 
     # Recent transactions preview
     st.markdown("---")
     st.markdown("#### Transacciones Recientes")
-    st.info("Las transacciones recientes se mostraran aqui una vez conectado a la base de datos.")
+
+    recent = get_recent_transactions()
+    if recent:
+        for tx in recent:
+            col1, col2, col3 = st.columns([2, 2, 2])
+
+            with col1:
+                tx_color = "green" if tx['type'] == 'BUY' else "red"
+                st.markdown(f":{tx_color}[{tx['type']}] **{tx['ticker']}**")
+
+            with col2:
+                st.caption(tx['date'][:10] if tx['date'] else '')
+
+            with col3:
+                qty = float(tx['quantity'] or 0)
+                prc = float(tx['price'] or 0)
+                st.markdown(f"{qty:.4f} @ ${prc:,.2f}")
+
+            st.markdown("---")
+    else:
+        st.info("No hay transacciones aun. Agrega tu primera transaccion o importa desde Delta CSV.")
 
 
 if __name__ == "__main__":

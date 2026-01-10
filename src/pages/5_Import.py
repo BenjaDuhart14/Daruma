@@ -4,11 +4,8 @@ Import Page - Import transactions from Delta CSV
 
 import streamlit as st
 import pandas as pd
-import sys
-import os
-
-# Add utils to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from utils import supabase_client as db
+from utils.delta_parser import parse_delta_csv, get_import_summary
 
 st.set_page_config(
     page_title="Import - Daruma",
@@ -31,12 +28,61 @@ st.markdown("""
 def parse_delta_csv_preview(content: str):
     """Parse Delta CSV for preview."""
     try:
-        from utils.delta_parser import parse_delta_csv, get_import_summary
         transactions = parse_delta_csv(content)
         summary = get_import_summary(transactions)
         return transactions, summary, None
     except Exception as e:
         return None, None, str(e)
+
+
+def import_transactions(transactions: list) -> dict:
+    """Import transactions to Supabase."""
+    try:
+        client = db.get_client()
+        imported = 0
+        skipped = 0
+        errors = []
+
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+
+        for i, tx in enumerate(transactions):
+            # Update progress
+            progress = (i + 1) / len(transactions)
+            progress_bar.progress(progress)
+            status_text.text(f"Procesando {i+1}/{len(transactions)}: {tx['ticker']}")
+
+            # Check for duplicates
+            if db.transaction_exists(client, tx['ticker'], tx['date'][:10], tx['quantity']):
+                skipped += 1
+                continue
+
+            # Insert transaction
+            try:
+                result = db.insert_transaction(client, tx)
+                if result:
+                    imported += 1
+                else:
+                    errors.append(f"{tx['ticker']}: Error inserting")
+            except Exception as e:
+                errors.append(f"{tx['ticker']}: {str(e)}")
+
+        progress_bar.empty()
+        status_text.empty()
+
+        return {
+            'imported': imported,
+            'skipped': skipped,
+            'errors': errors,
+            'success': True
+        }
+    except Exception as e:
+        return {
+            'imported': 0,
+            'skipped': 0,
+            'errors': [str(e)],
+            'success': False
+        }
 
 
 def main():
@@ -90,11 +136,12 @@ def main():
             st.metric("Ventas", summary['sell_count'])
 
         # Asset types breakdown
-        st.markdown("#### Tipos de Activos")
-        cols = st.columns(len(summary['asset_types']))
-        for i, (asset_type, count) in enumerate(summary['asset_types'].items()):
-            with cols[i]:
-                st.metric(asset_type, count)
+        if summary['asset_types']:
+            st.markdown("#### Tipos de Activos")
+            cols = st.columns(len(summary['asset_types']))
+            for i, (asset_type, count) in enumerate(summary['asset_types'].items()):
+                with cols[i]:
+                    st.metric(asset_type, count)
 
         # Date range
         if summary['date_range']:
@@ -133,23 +180,29 @@ def main():
 
         with col2:
             if st.button("Importar Transacciones", type="primary", use_container_width=True):
-                # TODO: Replace with actual Supabase import
                 with st.spinner("Importando transacciones..."):
-                    import time
-                    time.sleep(2)  # Simulated delay
+                    result = import_transactions(transactions)
 
-                    # Show success (mock)
+                if result['success']:
                     st.success(f"""
                     Importacion completada:
-                    - {summary['total_transactions']} transacciones importadas
-                    - {summary['unique_tickers']} tickers diferentes
+                    - {result['imported']} transacciones importadas
+                    - {result['skipped']} duplicados omitidos
                     """)
 
-                    st.balloons()
+                    if result['imported'] > 0:
+                        st.balloons()
+
+                    if result['errors']:
+                        with st.expander(f"Ver {len(result['errors'])} errores"):
+                            for err in result['errors']:
+                                st.warning(err)
+                else:
+                    st.error(f"Error en la importacion: {result['errors'][0] if result['errors'] else 'Unknown error'}")
 
         # Warning about duplicates
         st.markdown("---")
-        st.warning("""
+        st.info("""
         **Nota sobre duplicados:**
         El sistema verificara automaticamente si ya existen transacciones
         con la misma fecha, ticker y cantidad para evitar duplicados.
