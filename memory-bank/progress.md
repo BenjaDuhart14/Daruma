@@ -33,20 +33,28 @@
 - [x] Deploy to Streamlit Cloud - https://daruma14.streamlit.app/
 
 ## What's Left to Build
-- [ ] Configure GitHub Actions secrets (SUPABASE_URL, SUPABASE_KEY)
-- [ ] Connect UI to real Supabase data (replace mock data)
+- [x] Configure GitHub Actions secrets (SUPABASE_URL, SUPABASE_KEY)
+- [x] Connect UI to real Supabase data (replace mock data)
 - [ ] Import actual Delta CSV data
 - [ ] Test end-to-end flow with real data
-- [ ] Verify automated price updates work
+- [x] Verify automated price updates work
+- [ ] **User Authentication** (protect portfolio privacy)
+  - [ ] Enable Supabase Auth
+  - [ ] Add user_id to database tables
+  - [ ] Enable Row Level Security (RLS)
+  - [ ] Create login/register page
+  - [ ] Protect all pages with auth check
+- [ ] UI Improvements (based on user feedback)
 
 ## Current Status
-**Phase**: Ready for Streamlit Cloud Deployment
-**Blocker**: Need to make GitHub repo public first
-**Last Updated**: Pushed to GitHub
+**Phase**: Ready for Data Import
+**Next Step**: Import Delta CSV data via the app
+**Last Updated**: UI connected to Supabase
+**Detailed Plan**: See `nextSteps.md` for full roadmap
 
 ## Known Issues
 - Streamlit deprecation warnings for `use_container_width` (cosmetic, doesn't affect function)
-- UI currently shows mock data, not connected to Supabase yet
+- No data will show until Delta CSV is imported
 
 ## Key URLs
 - **GitHub Repo**: https://github.com/BenjaDuhart14/Daruma

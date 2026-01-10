@@ -1,17 +1,16 @@
 # Active Context: Daruma
 
 ## Current Focus
-Project deployed to GitHub, ready for Streamlit Cloud deployment.
+App deployed and connected to Supabase. Waiting for Delta CSV import. Planning user authentication system.
 
 ## Recent Changes
 - Project fully initialized with all files
 - All Streamlit UI pages created based on Delta app screenshots
-- Mock data in place for UI testing
+- UI connected to real Supabase data (no more mock data)
 - Backend scripts ready (update_prices.py, import_delta_csv.py)
 - Supabase database created and schema.sql executed
-- .env file configured with Supabase credentials
-- Tested locally - Streamlit runs at localhost:8501
-- Pushed to GitHub: https://github.com/BenjaDuhart14/Daruma
+- GitHub Actions configured and running (price updates every 4 hours)
+- Deployed to Streamlit Cloud: https://daruma14.streamlit.app/
 - Repository is PUBLIC
 
 ## Completed Steps
@@ -19,11 +18,13 @@ Project deployed to GitHub, ready for Streamlit Cloud deployment.
 2. [x] Add Supabase credentials to .env
 3. [x] Test locally (streamlit runs successfully)
 4. [x] Push to GitHub (public repo)
-5. [ ] Make repo public on GitHub
-6. [ ] Deploy to Streamlit Cloud
-7. [ ] Configure GitHub Actions secrets
-8. [ ] Import Delta CSV data
-9. [ ] Verify automated price updates
+5. [x] Make repo public on GitHub
+6. [x] Deploy to Streamlit Cloud
+7. [x] Configure GitHub Actions secrets
+8. [x] Connect UI to real Supabase data
+9. [x] Verify automated price updates
+10. [ ] Import Delta CSV data
+11. [ ] Add user authentication (protect portfolio privacy)
 
 ## Active Decisions
 
@@ -37,9 +38,9 @@ Project deployed to GitHub, ready for Streamlit Cloud deployment.
 - Repository is PUBLIC (required for Streamlit Cloud free tier)
 
 ### Pending
-- Caching strategy for Streamlit (st.cache_data)
-- Error handling UI for failed price fetches
-- Connect UI to real Supabase data (currently mock data)
+- User authentication system (Supabase Auth)
+- Row Level Security (RLS) for multi-user support
+- UI improvements based on user feedback
 
 ## Important Patterns
 - Follow minimal intervention principle
@@ -58,6 +59,8 @@ Project deployed to GitHub, ready for Streamlit Cloud deployment.
 
 ## Current Session Notes
 - Full project structure complete
-- UI uses mock data - needs Supabase connection
-- Ready for Streamlit Cloud deployment
+- UI connected to real Supabase data
+- App deployed at https://daruma14.streamlit.app/
+- GitHub Actions running price updates every 4 hours
 - Security verified: no credentials in repo
+- Next priority: User authentication for privacy
