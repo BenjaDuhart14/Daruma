@@ -26,83 +26,84 @@ This document outlines the remaining work to have Daruma fully functional as a p
 
 ## Phase 2: User Authentication (Priority: HIGH)
 
-### Why This Matters
+### Decision: SINGLE USER
+Simple password protection using Streamlit secrets. No database changes needed.
+
+### Why This Approach
 - Currently anyone with the URL can see your portfolio
-- Need to protect sensitive financial data
-- Supabase provides built-in authentication
+- Single user = simple password gate
+- Password stored securely in Streamlit Cloud secrets
+- No database modifications required
+- Quick to implement
 
-### 2.1 Enable Supabase Auth
-**Steps**:
-1. Go to Supabase Dashboard > Authentication > Providers
-2. Enable Email provider (simplest option)
-3. Optionally enable Google/GitHub OAuth for easier login
-
-### 2.2 Database Changes
-**Add user_id to tables**:
-```sql
--- Add user_id column to transactions
-ALTER TABLE transactions ADD COLUMN user_id UUID REFERENCES auth.users(id);
-
--- Add user_id to other tables
-ALTER TABLE dividends ADD COLUMN user_id UUID REFERENCES auth.users(id);
-ALTER TABLE portfolio_snapshots ADD COLUMN user_id UUID REFERENCES auth.users(id);
+### 2.1 Add Credentials to Streamlit Secrets
+**In Streamlit Cloud**:
+1. Go to https://share.streamlit.io
+2. Click on your Daruma app > Settings > Secrets
+3. Add:
+```toml
+[auth]
+email = "your-email@example.com"
+password = "your-secure-password-here"
 ```
 
-### 2.3 Row Level Security (RLS)
-**Enable RLS so users only see their own data**:
-```sql
--- Enable RLS on transactions
-ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
-
--- Policy: Users can only see their own transactions
-CREATE POLICY "Users can view own transactions" ON transactions
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own transactions" ON transactions
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Repeat for other tables...
-```
-
-### 2.4 Update Streamlit App
-**Changes needed**:
-- Add login page (new file: `src/pages/0_Login.py`)
-- Add authentication check to all pages
-- Store user session in `st.session_state`
-- Pass `user_id` when inserting/querying data
-
-**Login page structure**:
+### 2.2 Create Auth Helper
+**New file: `src/utils/auth.py`**
 ```python
-# src/pages/0_Login.py
 import streamlit as st
-from supabase import create_client
 
-def login_page():
-    st.title("Daruma - Login")
+def check_password():
+    """Returns True if user entered correct email and password."""
 
-    tab1, tab2 = st.tabs(["Login", "Register"])
+    def credentials_entered():
+        if (st.session_state["login_email"] == st.secrets["auth"]["email"] and
+            st.session_state["login_password"] == st.secrets["auth"]["password"]):
+            st.session_state["authenticated"] = True
+            del st.session_state["login_password"]  # Don't store password
+        else:
+            st.session_state["authenticated"] = False
 
-    with tab1:
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        if st.button("Login"):
-            # Supabase auth login
-            pass
+    if "authenticated" not in st.session_state:
+        st.markdown("### Login to Daruma")
+        st.text_input("Email", key="login_email")
+        st.text_input("Password", type="password", key="login_password")
+        st.button("Login", on_click=credentials_entered)
+        st.stop()
 
-    with tab2:
-        # Registration form
-        pass
+    if not st.session_state.get("authenticated"):
+        st.markdown("### Login to Daruma")
+        st.text_input("Email", key="login_email")
+        st.text_input("Password", type="password", key="login_password")
+        st.button("Login", on_click=credentials_entered)
+        st.error("Invalid email or password")
+        st.stop()
+
+    return True
 ```
 
-### 2.5 Protect All Pages
-**Add to each page**:
+### 2.3 Protect All Pages
+**Add to the TOP of each page file** (app.py and all pages/*.py):
 ```python
-# At the top of each page
-if 'user' not in st.session_state or not st.session_state.user:
-    st.warning("Please login first")
-    st.switch_page("pages/0_Login.py")
-    st.stop()
+from utils.auth import check_password
+check_password()  # Will stop execution if not authenticated
 ```
+
+### 2.4 Optional: Add Logout Button
+**Add to sidebar in app.py**:
+```python
+with st.sidebar:
+    if st.button("Logout"):
+        st.session_state["authenticated"] = False
+        st.rerun()
+```
+
+### Implementation Checklist
+- [ ] Create `src/utils/auth.py`
+- [ ] Add password to Streamlit Cloud secrets
+- [ ] Add `check_password()` to app.py
+- [ ] Add `check_password()` to all page files
+- [ ] Add logout button to sidebar
+- [ ] Test locally with `.streamlit/secrets.toml`
 
 ---
 
@@ -182,17 +183,13 @@ The price update script will need modification for multi-user:
 
 ## Questions to Decide
 
-1. **Single user vs Multi-user?**
-   - Single: Simpler, just add password protection
-   - Multi: Full auth system, more complex
+1. ~~**Single user vs Multi-user?**~~ **DECIDED: Single user**
 
-2. **Auth method preference?**
-   - Email/password (simplest)
-   - Google OAuth (convenient)
-   - Magic link (no password to remember)
+2. ~~**Auth method preference?**~~ **DECIDED: Email/password (Streamlit secrets)**
 
 3. **What UI changes are priority?**
    - Need screenshots or descriptions of desired changes
+   - Will collect feedback after using the app with real data
 
 ---
 
