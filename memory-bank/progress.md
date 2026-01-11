@@ -10,8 +10,8 @@
   - price_fetcher.py
   - calculations.py
   - delta_parser.py
-  - **auth.py** (NEW - authentication)
-  - **styles.py** (NEW - Alpine Dusk design system)
+  - auth.py (authentication)
+  - styles.py (Alpine Dusk design system + mobile CSS)
 - [x] update_prices.py script complete
 - [x] import_delta_csv.py script complete
 - [x] GitHub Actions workflow configured
@@ -30,42 +30,50 @@
 - [x] Tested locally (Streamlit runs at localhost:8501/8502)
 - [x] Pushed to GitHub: https://github.com/BenjaDuhart14/Daruma
 - [x] **User Authentication COMPLETE**
-  - Login page with Alpine Dusk styling
-  - Email/password authentication via Streamlit secrets
-  - All pages protected with check_password()
-  - Logout button in sidebar
+- [x] **Mobile-First Responsive Design COMPLETE**
+  - 3 breakpoints: 768px, 480px, 375px
+  - 2x2 grid layouts for metrics
+  - Stacked card layouts for holdings
+  - Touch-friendly active states
+  - Collapsed sidebar by default
+- [x] **Spanish to English Translation COMPLETE**
+- [x] **Delta CSV Data Imported** (210 transactions, 37 tickers)
 
 ## What's In Progress
-- [ ] Testing on iPhone (mobile responsiveness)
-- [ ] Streamlit Cloud deployment with new UI
+- [ ] Push latest commit to GitHub (WSL auth issue)
+- [ ] Final iPhone testing after Streamlit Cloud redeploy
 
 ## What's Left to Build
-- [ ] Import actual Delta CSV data
-- [ ] Test end-to-end flow with real data on mobile
-- [ ] Fine-tune mobile responsiveness if needed
-- [ ] Add portfolio allocation pie chart
-- [ ] Add performance comparison vs benchmarks (S&P 500)
+- [ ] Fine-tune mobile responsiveness if needed after testing
+- [ ] Portfolio allocation pie chart
+- [ ] Performance comparison vs S&P 500 benchmark
 - [ ] Edit/delete transactions feature
 - [ ] Export data to CSV
 - [ ] Price alerts (optional)
 
 ## Current Status
-**Phase**: UI Redesign Complete - Ready for Mobile Testing
-**Next Step**: Deploy to Streamlit Cloud and test on iPhone
-**Last Updated**: January 2026 - Alpine Dusk theme complete
+**Phase**: Mobile Redesign Complete - Ready for Final Testing
+**Next Step**: Push to GitHub and test on iPhone
+**Last Updated**: January 11, 2026 - Mobile redesign + translations complete
 **Detailed Plan**: See `nextSteps.md` for full roadmap
 
-## Recent Accomplishments (This Session)
-1. ✅ Implemented full authentication system with styled login page
-2. ✅ Created Alpine Dusk design system (700+ lines of CSS)
-3. ✅ Redesigned all 6 pages with new theme
-4. ✅ Added company/crypto logos (Financial Modeling Prep + CoinGecko APIs)
-5. ✅ Fixed dropdown z-index for mobile compatibility
-6. ✅ Committed and pushed to GitHub
+## Recent Accomplishments (This Session - January 11, 2026)
+1. Added 3 CSS breakpoints for mobile responsiveness (768px, 480px, 375px)
+2. Changed all metric layouts from 4 columns to 2x2 grids
+3. Split 7 period buttons into 4+3 rows for better touch targets
+4. Created mobile-friendly stacked card layout for holdings
+5. Added touch-friendly `:active` states (replaces hover on touch devices)
+6. Fixed iOS input zoom issue with 16px minimum font size
+7. Reduced font sizes and padding for small screens
+8. Changed all pages to collapsed sidebar by default
+9. Translated all Spanish text to English
+10. Imported Delta CSV data (210 transactions)
+11. Committed all changes to Git
 
 ## Known Issues
 - Some smaller company logos may not load (falls back to initials)
-- Streamlit dropdown z-index may need further mobile testing
+- WSL Git authentication requires manual push to GitHub
+- Performance page uses mock data (not connected to real snapshots yet)
 
 ## Key URLs
 - **GitHub Repo**: https://github.com/BenjaDuhart14/Daruma
@@ -82,12 +90,16 @@
 | Jan 2026 | Single-user auth | Simple password gate, no DB changes needed |
 | Jan 2026 | Alpine Dusk theme | Modern fintech look, mobile-first design |
 | Jan 2026 | Financial Modeling Prep for logos | Free API, good stock coverage |
+| Jan 11, 2026 | 2x2 grid layouts | 4 columns too cramped on mobile |
+| Jan 11, 2026 | Collapsed sidebar default | Sidebar covers screen on mobile |
+| Jan 11, 2026 | English-only UI | Consistent language for all users |
 
 ## Milestones
-1. ✅ **Backend Ready**: Scripts + DB schema complete
-2. ✅ **Frontend Ready**: Streamlit app functional
-3. ✅ **Deployed**: All services running in cloud
-4. ✅ **Authentication**: Login page protecting all routes
-5. ✅ **UI Redesign**: Alpine Dusk theme implemented
-6. ⬜ **Data Imported**: Delta CSV loaded
-7. ⬜ **Production**: Daily use on iPhone begins
+1. Backend Ready: Scripts + DB schema complete
+2. Frontend Ready: Streamlit app functional
+3. Deployed: All services running in cloud
+4. Authentication: Login page protecting all routes
+5. UI Redesign: Alpine Dusk theme implemented
+6. **Mobile Responsive: 3 breakpoints, touch-friendly**
+7. **Data Imported: Delta CSV loaded (210 transactions)**
+8. Production: Daily use on iPhone begins (pending final test)

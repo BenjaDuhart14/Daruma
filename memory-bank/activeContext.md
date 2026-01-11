@@ -1,39 +1,32 @@
 # Active Context: Daruma
 
 ## Current Focus
-UI redesign complete with Alpine Dusk theme. Authentication implemented. Ready for mobile testing on iPhone and Delta CSV data import.
+Mobile-first responsive redesign complete. All Spanish text translated to English. Delta CSV data imported (210 transactions). Ready for final iPhone testing.
 
-## Recent Changes (This Session - January 2026)
-1. **Authentication System Implemented**
-   - Created `src/utils/auth.py` with styled login page
-   - Floating logo with aurora glow animation
-   - Email/password auth via Streamlit secrets
-   - All pages protected with `check_password()`
-   - Logout button in sidebar
+## Recent Changes (This Session - January 11, 2026)
 
-2. **Alpine Dusk Theme Created**
-   - New design system in `src/utils/styles.py` (700+ lines)
-   - Deep purple-to-navy gradient backgrounds
-   - Mountain silhouette visual effect
-   - Glassmorphism cards with purple borders
-   - JetBrains Mono for numbers, Plus Jakarta Sans for text
-   - Green/red semantic colors for gains/losses
+### 1. Mobile-First Responsive Redesign
+- Added 3 CSS breakpoints: 768px (tablet), 480px (mobile), 375px (small mobile)
+- Changed all pages to collapsed sidebar by default
+- Converted 4-column metric layouts to 2x2 grids
+- Split 7 period buttons into 4+3 rows for better touch targets
+- Created new `.data-row-mobile` CSS class with stacked layout
+- Added touch-friendly `:active` states (replaces hover on touch devices)
+- Reduced font sizes: 48px to 24px, 32px to 18px on mobile
+- Fixed iOS input zoom with 16px minimum font size
+- Reduced card padding from 24px to 12-14px on mobile
 
-3. **All Pages Redesigned**
-   - `app.py` - Dashboard with metric cards, portfolio chart
-   - `1_Holdings.py` - With company/crypto logos from APIs
-   - `2_Performance.py` - Charts with high/low markers
-   - `3_Dividends.py` - Green-themed dividend tracking
-   - `4_Add_Transaction.py` - Styled form with live calculations
-   - `5_Import.py` - Step-by-step import wizard
+### 2. Spanish to English Translation
+- "Cerrar Sesion" to "Sign Out"
+- "Iniciar Sesion" to "Sign In"
+- "Email o password incorrectos" to "Incorrect email or password"
+- "tu@email.com" to "your@email.com"
 
-4. **Company/Crypto Logos Added**
-   - Stocks/ETFs: Financial Modeling Prep API
-   - Crypto: CoinGecko CDN with ticker mapping
-   - Fallback to letter initials if logo fails
-
-5. **Bug Fixes**
-   - Fixed dropdown z-index (was being cut off by cards below)
+### 3. Delta CSV Data Import
+- Imported 210 transactions from Delta app
+- 37 unique tickers
+- Date range: July 2021 to January 2026
+- 1 new transaction inserted, 209 duplicates skipped (already existed)
 
 ## Completed Steps
 1. [x] Create Supabase project and run schema.sql
@@ -44,13 +37,14 @@ UI redesign complete with Alpine Dusk theme. Authentication implemented. Ready f
 6. [x] Configure GitHub Actions secrets
 7. [x] Connect UI to real Supabase data
 8. [x] Verify automated price updates
-9. [x] **Implement user authentication**
-10. [x] **Redesign UI with Alpine Dusk theme**
-11. [x] **Add company/crypto logos**
-12. [x] **Push updates to GitHub**
-13. [ ] Configure secrets on Streamlit Cloud
-14. [ ] Test on iPhone
-15. [ ] Import Delta CSV data
+9. [x] Implement user authentication
+10. [x] Redesign UI with Alpine Dusk theme
+11. [x] Add company/crypto logos
+12. [x] Configure secrets on Streamlit Cloud
+13. [x] **Mobile-first responsive redesign**
+14. [x] **Translate Spanish to English**
+15. [x] **Import Delta CSV data**
+16. [ ] Final iPhone testing
 
 ## Active Decisions
 
@@ -59,13 +53,15 @@ UI redesign complete with Alpine Dusk theme. Authentication implemented. Ready f
 - All free tiers
 - USD as base currency
 - Automatic dividend calculation
-- **Single-user authentication** (email/password in Streamlit secrets)
-- **Alpine Dusk theme** (dark purple gradient, glassmorphism)
-- **Mobile-first design** (optimized for iPhone)
+- Single-user authentication (email/password in Streamlit secrets)
+- Alpine Dusk theme (dark purple gradient, glassmorphism)
+- Mobile-first design with 3 breakpoints
+- 2x2 grid layouts for metrics (not 4 columns)
+- Sidebar collapsed by default on all pages
+- All UI text in English
 - Repository is PUBLIC (required for Streamlit Cloud free tier)
 
 ### Pending
-- Fine-tuning mobile responsiveness based on iPhone testing
 - Portfolio allocation pie chart
 - Performance vs benchmark comparison
 
@@ -78,32 +74,32 @@ UI redesign complete with Alpine Dusk theme. Authentication implemented. Ready f
 - **NEVER commit credentials to public repo**
 - Use `apply_styles()` at top of each page
 - Use `check_password()` before any page content
+- Use 2-column layouts for mobile compatibility
+- Always test on iPhone after UI changes
 
 ## Key Files Modified This Session
 ```
-src/utils/auth.py        # NEW - Authentication + login page
-src/utils/styles.py      # NEW - Alpine Dusk design system
-src/app.py               # Redesigned dashboard
-src/pages/1_Holdings.py  # Added logos, new styling
-src/pages/2_Performance.py
-src/pages/3_Dividends.py
-src/pages/4_Add_Transaction.py
-src/pages/5_Import.py
+src/utils/styles.py          # Added 3 mobile breakpoints + helper classes
+src/utils/auth.py            # English translations
+src/app.py                   # Mobile layouts, 2x2 grids, English
+src/pages/1_Holdings.py      # Mobile card layout with stacked details
+src/pages/2_Performance.py   # Mobile layout, 4+3 period buttons
+src/pages/3_Dividends.py     # Mobile layout
+src/pages/4_Add_Transaction.py # Sidebar collapsed
+src/pages/5_Import.py        # Mobile layout, 2x2 metrics
 ```
 
 ## Current Session Notes
-- Commit `15f8aed`: "feat: Complete UI redesign with Alpine Dusk theme"
-- All changes pushed to GitHub
-- Streamlit Cloud should auto-deploy from main branch
-- User needs to configure auth secrets before testing live
-- Design inspired by reference fintech dashboard image
+- Commit `8d425d2`: "fix: Mobile-first responsive redesign + translate Spanish to English"
+- 8 files changed, 491 insertions, 185 deletions
+- Need to push to GitHub (auth issue in WSL)
+- Streamlit Cloud will auto-deploy after push
 
 ## Next Actions
-1. **Configure Streamlit Cloud secrets** (email/password for auth)
-2. **Test on iPhone** (verify mobile responsiveness)
-3. **Import Delta CSV data** (populate real portfolio)
-4. Gather feedback on mobile UX
-5. Iterate on design if needed
+1. **Push to GitHub** (manual push needed due to WSL auth)
+2. **Test on iPhone** (verify mobile responsiveness after deploy)
+3. Gather feedback on mobile UX
+4. Iterate on design if needed
 
 ## Key URLs
 - **GitHub Repo**: https://github.com/BenjaDuhart14/Daruma

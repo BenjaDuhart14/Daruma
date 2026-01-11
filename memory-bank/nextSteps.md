@@ -5,14 +5,14 @@ This document outlines the remaining work to have Daruma fully functional as a p
 
 ---
 
-## ✅ COMPLETED: Phase 1 - Data Import Setup
+## COMPLETED: Phase 1 - Data Import Setup
 - Delta CSV import page ready at /Import
 - Preview and validation before importing
 - Duplicate detection to prevent re-importing same transactions
 
 ---
 
-## ✅ COMPLETED: Phase 2 - User Authentication
+## COMPLETED: Phase 2 - User Authentication
 
 ### What Was Implemented
 - **Login Page**: Beautiful Alpine Dusk themed login with floating logo animation
@@ -23,7 +23,7 @@ This document outlines the remaining work to have Daruma fully functional as a p
 
 ### How to Configure (For Production)
 1. Go to https://share.streamlit.io
-2. Find your Daruma app → **Settings** → **Secrets**
+2. Find your Daruma app -> **Settings** -> **Secrets**
 3. Add your credentials:
 ```toml
 [auth]
@@ -33,10 +33,10 @@ password = "your-secure-password"
 
 ---
 
-## ✅ COMPLETED: Phase 3 - UI Redesign (Alpine Dusk Theme)
+## COMPLETED: Phase 3 - UI Redesign (Alpine Dusk Theme)
 
 ### What Was Implemented
-- **Design System** (`styles.py`): 700+ lines of CSS with:
+- **Design System** (`styles.py`): 900+ lines of CSS with:
   - Deep purple-to-navy gradient backgrounds
   - Mountain silhouette visual effect
   - Glassmorphism cards with purple glow borders
@@ -52,81 +52,117 @@ password = "your-secure-password"
 - **Add Transaction**: Styled form with live calculations
 - **Import**: Step-by-step wizard with progress indicators
 
-### Logo Sources
-- **Stocks/ETFs**: Financial Modeling Prep API (free)
-- **Crypto**: CoinGecko CDN with fallback to initials
+---
+
+## COMPLETED: Phase 4 - Mobile-First Responsive Design
+
+### What Was Implemented (January 11, 2026)
+
+#### CSS Breakpoints Added
+- **768px** (Tablet): Reduced font sizes, smaller padding
+- **480px** (Mobile): Compact layouts, touch-optimized
+- **375px** (Small mobile): Minimum sizes for iPhone SE
+
+#### Layout Changes
+- All metric sections: 4 columns -> 2x2 grids
+- Period buttons: 7 in a row -> 4+3 rows
+- Holdings cards: 5-column flex -> Stacked mobile layout
+- Sidebar: Expanded -> Collapsed by default on all pages
+- Filter dropdowns: 3 columns -> 2 columns + search
+
+#### Touch Optimization
+- Added `:active` states for touch devices
+- Removed hover effects on touch (no hover on mobile)
+- Minimum touch target: 44px (Apple guideline)
+- Input font size: 16px minimum (prevents iOS zoom)
+
+#### Spanish to English Translation
+- "Cerrar Sesion" -> "Sign Out"
+- "Iniciar Sesion" -> "Sign In"
+- "Email o password incorrectos" -> "Incorrect email or password"
+- "tu@email.com" -> "your@email.com"
 
 ---
 
-## 🔄 CURRENT: Phase 4 - Mobile Testing & Deployment
+## COMPLETED: Phase 5 - Data Import
 
-### 4.1 Deploy to Streamlit Cloud
-**Status**: Code pushed to GitHub, awaiting deployment
+### Delta CSV Imported
+- **210 transactions** loaded
+- **37 unique tickers** (stocks, ETFs, crypto)
+- Date range: July 2021 to January 2026
+- Duplicate detection working (209 skipped as already existed)
 
-**Steps**:
-1. Streamlit Cloud should auto-detect the new commit
-2. If not, manually trigger redeployment
-3. Configure secrets (see Phase 2 above)
+---
 
-### 4.2 Test on iPhone
+## CURRENT: Phase 6 - Final Testing & Launch
+
+### 6.1 Push to GitHub
+**Status**: Committed locally, needs manual push (WSL auth issue)
+
+```bash
+cd /home/benjaduhart14/investment-tracker
+git push origin main
+```
+
+### 6.2 Test on iPhone
 **Checklist**:
 - [ ] Login page displays correctly
-- [ ] Dashboard metrics readable on mobile
+- [ ] Dashboard metrics readable (2x2 grid)
 - [ ] Charts resize properly
-- [ ] Holdings list scrolls smoothly
-- [ ] Dropdowns open without being cut off
-- [ ] Touch targets are large enough
+- [ ] Holdings list scrolls smoothly with stacked cards
+- [ ] Period buttons easy to tap (4+3 layout)
+- [ ] Touch targets are large enough (44px min)
 - [ ] P&L colors visible (green/red)
 - [ ] Logos load correctly
+- [ ] No horizontal scrolling
+- [ ] Input fields don't trigger zoom
 
-### 4.3 Import Delta Data
-**Steps**:
-1. Export from Delta app: Settings → Export Data → CSV
-2. Open Daruma on iPhone: https://daruma14.streamlit.app/Import
-3. Upload CSV file
-4. Review preview and click "Import Transactions"
-5. Verify data in Holdings page
+### 6.3 Iterate if Needed
+- Adjust font sizes if still too small
+- Tweak padding if cards feel cramped
+- Fix any overflow issues discovered
 
 ---
 
-## 📋 Phase 5 - Feature Enhancements (Future)
+## FUTURE: Phase 7 - Feature Enhancements
 
-### 5.1 High Priority
+### 7.1 High Priority
 - [ ] Portfolio allocation pie chart
 - [ ] Performance vs S&P 500 benchmark
+- [ ] Connect Performance page to real portfolio_snapshots data
 - [ ] Edit/delete transactions
-- [ ] Pull-to-refresh on mobile
 
-### 5.2 Medium Priority
+### 7.2 Medium Priority
 - [ ] Export data to CSV
 - [ ] Currency toggle (USD/CLP display)
 - [ ] Target allocation setting
 - [ ] Dividend calendar view
+- [ ] Pull-to-refresh gesture
 
-### 5.3 Low Priority (Nice to Have)
+### 7.3 Low Priority (Nice to Have)
 - [ ] Price alerts via email
 - [ ] Multiple portfolios support
 - [ ] Dark/light theme toggle
-- [ ] Widget for iPhone home screen
+- [ ] Widget for iPhone home screen (PWA)
 
 ---
 
-## 📋 Phase 6 - Performance & Polish (Future)
+## FUTURE: Phase 8 - Performance & Polish
 
-### 6.1 Caching Optimization
+### 8.1 Caching Optimization
 - Current: 5 minute TTL on all cached functions
 - Future consideration:
   - Holdings: 5 min
   - Historical data: 1 hour
   - Static data: session-based
 
-### 6.2 Error Handling
+### 8.2 Error Handling
 - [ ] Graceful fallback when Supabase is down
 - [ ] Better error messages for users
 - [ ] Retry logic for failed API calls
 - [ ] Offline indicator
 
-### 6.3 Testing
+### 8.3 Testing
 - [ ] Unit tests for calculations
 - [ ] Edge case testing for Delta CSV parser
 - [ ] Authentication flow testing
@@ -147,41 +183,42 @@ src/
 │   └── 5_Import.py           # Delta CSV import
 └── utils/
     ├── auth.py               # Authentication (login page + check)
-    ├── styles.py             # Alpine Dusk design system
+    ├── styles.py             # Alpine Dusk design system (900+ lines)
     ├── supabase_client.py    # Database operations
     ├── price_fetcher.py      # yfinance integration
     ├── calculations.py       # Portfolio math
     └── delta_parser.py       # CSV parsing
 ```
 
-### Design System (styles.py)
+### Mobile CSS Architecture (styles.py)
+```css
+/* Breakpoints */
+@media (max-width: 768px) { /* Tablet */ }
+@media (max-width: 480px) { /* Mobile */ }
+@media (max-width: 375px) { /* Small mobile */ }
+
+/* Mobile-specific classes */
+.data-row-mobile     /* Stacked card layout */
+.row-header          /* Top row: ticker + badge */
+.row-details         /* 2x2 grid of values */
+.detail-item         /* Individual value box */
+
+/* Touch optimization */
+@media (hover: none) { /* Touch devices only */ }
+```
+
+### Key Design Patterns
 ```python
-# Key colors
-COLORS = {
-    'bg_primary': '#0a0a12',      # Deep navy
-    'accent_purple': '#8b5cf6',    # Primary accent
-    'accent_cyan': '#06b6d4',      # Secondary accent
-    'gain': '#10b981',             # Green for profits
-    'loss': '#ef4444',             # Red for losses
-}
+# Every page starts with:
+st.set_page_config(..., initial_sidebar_state="collapsed")
+apply_styles()
+check_password()
 
-# Usage in pages
-from utils.styles import apply_styles, page_header, section_label
-apply_styles()  # Apply CSS
-page_header("Title", "Subtitle", "🎯")  # Render header
-```
+# Use 2 columns for metrics:
+col1, col2 = st.columns(2)
 
-### Authentication Flow
-```
-User visits any page
-    ↓
-check_password() called
-    ↓
-Not authenticated? → Show login page → st.stop()
-    ↓
-Authenticated? → Continue to page content
-    ↓
-Logout button → Clear session → Redirect to login
+# Use mobile-friendly card markup:
+st.markdown('<div class="data-row-mobile">...</div>', unsafe_allow_html=True)
 ```
 
 ---
@@ -212,4 +249,4 @@ git push origin main
 
 ### View Logs
 - GitHub Actions: https://github.com/BenjaDuhart14/Daruma/actions
-- Streamlit Cloud: App dashboard → Logs
+- Streamlit Cloud: App dashboard -> Logs
