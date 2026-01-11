@@ -630,17 +630,323 @@ def get_base_styles():
         }
 
         /* ==================== RESPONSIVE ==================== */
+
+        /* Tablet breakpoint */
         @media (max-width: 768px) {
             .metric-value-large {
-                font-size: 36px;
+                font-size: 28px;
             }
 
             .metric-value {
-                font-size: 24px;
+                font-size: 20px;
             }
 
             .page-title {
+                font-size: 22px;
+            }
+
+            .page-subtitle {
+                font-size: 13px;
+            }
+
+            .metric-card {
+                padding: 14px 16px;
+                border-radius: 12px;
+            }
+
+            .metric-label {
+                font-size: 10px;
+            }
+
+            .metric-change {
+                font-size: 12px;
+                padding: 3px 8px;
+            }
+
+            .data-row {
+                padding: 12px 14px;
+                border-radius: 10px;
+            }
+
+            .ticker-badge {
+                width: 36px;
+                height: 36px;
+                font-size: 11px;
+                border-radius: 8px;
+                margin-right: 10px;
+            }
+
+            .ticker-name {
+                font-size: 14px;
+            }
+
+            .ticker-details {
+                font-size: 11px;
+            }
+
+            .value-display {
+                font-size: 13px;
+            }
+
+            .pnl-badge {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+
+            .section-label {
+                font-size: 10px;
+                margin-bottom: 10px;
+            }
+
+            /* Chart margins */
+            [data-testid="stPlotlyChart"] {
+                margin-left: -10px;
+                margin-right: -10px;
+            }
+        }
+
+        /* Mobile breakpoint */
+        @media (max-width: 480px) {
+            .metric-value-large {
                 font-size: 24px;
+            }
+
+            .metric-value {
+                font-size: 18px;
+            }
+
+            .metric-currency {
+                font-size: 14px;
+            }
+
+            .page-title {
+                font-size: 20px;
+                gap: 8px;
+            }
+
+            .page-title span {
+                font-size: 24px !important;
+            }
+
+            .page-subtitle {
+                font-size: 12px;
+                margin-bottom: 16px;
+            }
+
+            .metric-card {
+                padding: 12px 14px;
+                border-radius: 10px;
+            }
+
+            .metric-label {
+                font-size: 9px;
+                letter-spacing: 0.3px;
+                margin-bottom: 4px;
+            }
+
+            .metric-change {
+                font-size: 11px;
+                padding: 2px 6px;
+                margin-top: 6px;
+            }
+
+            .data-row {
+                padding: 12px;
+                border-radius: 10px;
+                margin-bottom: 6px;
+            }
+
+            .ticker-badge {
+                width: 32px;
+                height: 32px;
+                font-size: 10px;
+                border-radius: 8px;
+                margin-right: 8px;
+            }
+
+            .ticker-name {
+                font-size: 13px;
+            }
+
+            .ticker-details {
+                font-size: 10px;
+            }
+
+            .value-display {
+                font-size: 12px;
+            }
+
+            .pnl-badge {
+                font-size: 11px;
+                padding: 4px 8px;
+                border-radius: 6px;
+            }
+
+            .section-label {
+                font-size: 9px;
+                letter-spacing: 1px;
+                margin-bottom: 8px;
+            }
+
+            /* Sidebar collapsed on mobile */
+            [data-testid="stSidebar"] {
+                min-width: 0 !important;
+            }
+
+            /* Better touch targets for buttons */
+            .stButton > button {
+                min-height: 44px !important;
+                padding: 12px 16px !important;
+            }
+
+            /* Input fields */
+            .stTextInput > div > div > input,
+            .stSelectbox > div > div > div,
+            .stNumberInput > div > div > input {
+                padding: 10px 12px !important;
+                font-size: 16px !important; /* Prevents zoom on iOS */
+            }
+        }
+
+        /* Small mobile breakpoint */
+        @media (max-width: 375px) {
+            .metric-value-large {
+                font-size: 22px;
+            }
+
+            .metric-value {
+                font-size: 16px;
+            }
+
+            .page-title {
+                font-size: 18px;
+            }
+
+            .metric-card {
+                padding: 10px 12px;
+            }
+
+            .data-row {
+                padding: 10px;
+            }
+
+            .ticker-badge {
+                width: 28px;
+                height: 28px;
+                font-size: 9px;
+            }
+        }
+
+        /* ==================== MOBILE LAYOUT HELPERS ==================== */
+
+        /* Mobile-friendly data row (stacks content) */
+        .data-row-mobile {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .data-row-mobile .row-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .data-row-mobile .row-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .data-row-mobile .row-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .data-row-mobile .detail-item {
+            text-align: center;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+
+        .data-row-mobile .detail-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .data-row-mobile .detail-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Period buttons container - horizontal scroll on mobile */
+        .period-buttons {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .period-buttons::-webkit-scrollbar {
+            display: none;
+        }
+
+        .period-buttons .period-btn {
+            flex-shrink: 0;
+            min-width: 44px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .period-buttons .period-btn:active {
+            background: var(--bg-card-hover);
+            transform: scale(0.96);
+        }
+
+        .period-buttons .period-btn.active {
+            background: var(--accent-purple);
+            color: white;
+            border-color: var(--accent-purple);
+        }
+
+        /* Touch-friendly active states */
+        @media (hover: none) {
+            .metric-card:active {
+                background: var(--bg-card-hover);
+                transform: scale(0.98);
+            }
+
+            .data-row:active,
+            .data-row-mobile:active {
+                background: var(--bg-card-hover);
+                transform: scale(0.99);
+            }
+
+            /* Remove hover effects on touch devices */
+            .metric-card:hover,
+            .data-row:hover {
+                transform: none;
             }
         }
     </style>

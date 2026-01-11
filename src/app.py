@@ -18,7 +18,7 @@ st.set_page_config(
     page_title="Daruma",
     page_icon="🎯",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # Apply Alpine Dusk theme
@@ -49,7 +49,7 @@ with st.sidebar:
 
     st.markdown("---")
 
-    if st.button("🚪 Cerrar Sesion", use_container_width=True):
+    if st.button("🚪 Sign Out", use_container_width=True):
         logout()
 
 # Session state
@@ -195,28 +195,34 @@ def create_movers_chart(holdings: list, top_n: int = 5, show_gainers: bool = Tru
 
 
 def render_holding_row(h: dict):
-    """Render a single holding row with Alpine Dusk styling."""
+    """Render a single holding row with mobile-friendly layout."""
     is_positive = h['pnl_pct'] >= 0
     pnl_class = "gain" if is_positive else "loss"
     sign = "+" if is_positive else ""
-
-    # Generate initials for badge
     initials = h['ticker'][:2].upper()
 
+    # Mobile-friendly stacked layout
     st.markdown(f"""
-    <div class="data-row">
-        <div style="display: flex; align-items: center; flex: 2;">
-            <div class="ticker-badge">{initials}</div>
-            <div>
-                <div class="ticker-name">{h['ticker']}</div>
-                <div class="ticker-details">{h['shares']:.4f} shares @ ${h['avg_price']:,.2f}</div>
+    <div class="data-row-mobile">
+        <div class="row-header">
+            <div class="row-left">
+                <div class="ticker-badge">{initials}</div>
+                <div>
+                    <div class="ticker-name">{h['ticker']}</div>
+                    <div class="ticker-details">{h['shares']:.2f} shares</div>
+                </div>
             </div>
+            <span class="pnl-badge {pnl_class}">{sign}{h['pnl_pct']:.1f}%</span>
         </div>
-        <div style="flex: 1; text-align: right;">
-            <div class="value-display">${h['current_value']:,.2f}</div>
-        </div>
-        <div style="flex: 1; text-align: right;">
-            <span class="pnl-badge {pnl_class}">{sign}${h['pnl']:,.2f} ({sign}{h['pnl_pct']:.1f}%)</span>
+        <div class="row-details">
+            <div class="detail-item">
+                <div class="detail-label">Value</div>
+                <div class="detail-value">${h['current_value']:,.0f}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">P&L</div>
+                <div class="detail-value" style="color: var(--{pnl_class});">{sign}${h['pnl']:,.0f}</div>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -231,38 +237,39 @@ def main():
     if not data['connected']:
         st.warning("⚠️ Not connected to database. Please check your Supabase credentials.")
 
-    # Main metrics row
-    col1, col2, col3, col4 = st.columns(4)
+    # Main metrics - 2x2 grid for mobile compatibility
+    pnl_class = "gain" if data['total_pnl'] >= 0 else "loss"
+    sign = "+" if data['total_pnl'] >= 0 else ""
+    asset_count = len(data['holdings'])
 
-    with col1:
+    row1_col1, row1_col2 = st.columns(2)
+    with row1_col1:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">Total Value</div>
-            <div class="metric-value-large">${data['total_value']:,.2f}</div>
+            <div class="metric-value-large">${data['total_value']:,.0f}</div>
         </div>
         """, unsafe_allow_html=True)
 
-    with col2:
-        pnl_class = "gain" if data['total_pnl'] >= 0 else "loss"
-        sign = "+" if data['total_pnl'] >= 0 else ""
+    with row1_col2:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">Total P&L</div>
-            <div class="metric-value" style="color: var(--{pnl_class});">{sign}${data['total_pnl']:,.2f}</div>
-            <span class="metric-change {pnl_class}">{sign}{data['total_pnl_pct']:.2f}%</span>
+            <div class="metric-value" style="color: var(--{pnl_class});">{sign}${data['total_pnl']:,.0f}</div>
+            <span class="metric-change {pnl_class}">{sign}{data['total_pnl_pct']:.1f}%</span>
         </div>
         """, unsafe_allow_html=True)
 
-    with col3:
+    row2_col1, row2_col2 = st.columns(2)
+    with row2_col1:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">Invested</div>
-            <div class="metric-value">${data['total_cost']:,.2f}</div>
+            <div class="metric-value">${data['total_cost']:,.0f}</div>
         </div>
         """, unsafe_allow_html=True)
 
-    with col4:
-        asset_count = len(data['holdings'])
+    with row2_col2:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">Assets</div>
@@ -272,13 +279,24 @@ def main():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Period selector
+    # Period selector - use 4 columns for better mobile display
     section_label("Portfolio Performance")
 
     periods = ['1D', '1W', '1M', '3M', 'YTD', '1Y', 'ALL']
-    cols = st.columns(len(periods))
-    for i, period in enumerate(periods):
-        with cols[i]:
+
+    # Row 1: First 4 periods
+    cols1 = st.columns(4)
+    for i, period in enumerate(periods[:4]):
+        with cols1[i]:
+            btn_type = "primary" if st.session_state.selected_period == period else "secondary"
+            if st.button(period, key=f"period_{period}", type=btn_type, use_container_width=True):
+                st.session_state.selected_period = period
+                st.rerun()
+
+    # Row 2: Last 3 periods
+    cols2 = st.columns(4)
+    for i, period in enumerate(periods[4:]):
+        with cols2[i]:
             btn_type = "primary" if st.session_state.selected_period == period else "secondary"
             if st.button(period, key=f"period_{period}", type=btn_type, use_container_width=True):
                 st.session_state.selected_period = period

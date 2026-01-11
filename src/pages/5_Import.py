@@ -14,7 +14,7 @@ st.set_page_config(
     page_title="Import - Daruma",
     page_icon="🎯",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # Apply Alpine Dusk theme
@@ -131,10 +131,9 @@ def main():
         <h3 style="color: var(--text-primary); margin-bottom: 20px;">📋 Import Preview</h3>
         """, unsafe_allow_html=True)
 
-        # Summary metrics
-        col1, col2, col3, col4 = st.columns(4)
-
-        with col1:
+        # Summary metrics - 2x2 grid for mobile
+        row1_col1, row1_col2 = st.columns(2)
+        with row1_col1:
             st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-label">Transactions</div>
@@ -142,15 +141,16 @@ def main():
             </div>
             """, unsafe_allow_html=True)
 
-        with col2:
+        with row1_col2:
             st.markdown(f"""
             <div class="metric-card">
-                <div class="metric-label">Unique Tickers</div>
+                <div class="metric-label">Tickers</div>
                 <div class="metric-value">{summary['unique_tickers']}</div>
             </div>
             """, unsafe_allow_html=True)
 
-        with col3:
+        row2_col1, row2_col2 = st.columns(2)
+        with row2_col1:
             st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-label">Buy Orders</div>
@@ -158,7 +158,7 @@ def main():
             </div>
             """, unsafe_allow_html=True)
 
-        with col4:
+        with row2_col2:
             st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-label">Sell Orders</div>

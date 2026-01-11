@@ -15,7 +15,7 @@ st.set_page_config(
     page_title="Performance - Daruma",
     page_icon="🎯",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # Apply Alpine Dusk theme
@@ -149,14 +149,23 @@ def create_asset_bar_chart(assets: list):
 def main():
     page_header("Performance", "Track your investment returns over time", "📈")
 
-    # Period selector
+    # Period selector - 4+3 layout for mobile
     if 'perf_period' not in st.session_state:
         st.session_state.perf_period = '1M'
 
     periods = ['1D', '1W', '1M', '3M', 'YTD', '1Y', 'ALL']
-    cols = st.columns(len(periods))
-    for i, period in enumerate(periods):
-        with cols[i]:
+
+    cols1 = st.columns(4)
+    for i, period in enumerate(periods[:4]):
+        with cols1[i]:
+            btn_type = "primary" if st.session_state.perf_period == period else "secondary"
+            if st.button(period, key=f"perf_{period}", type=btn_type, use_container_width=True):
+                st.session_state.perf_period = period
+                st.rerun()
+
+    cols2 = st.columns(4)
+    for i, period in enumerate(periods[4:]):
+        with cols2[i]:
             btn_type = "primary" if st.session_state.perf_period == period else "secondary"
             if st.button(period, key=f"perf_{period}", type=btn_type, use_container_width=True):
                 st.session_state.perf_period = period
@@ -167,42 +176,43 @@ def main():
     # Get data
     data = get_mock_performance(st.session_state.perf_period)
 
-    # Summary metrics
-    col1, col2, col3, col4 = st.columns(4)
+    # Summary metrics - 2x2 grid for mobile
+    is_positive = data['change'] >= 0
+    pnl_class = "gain" if is_positive else "loss"
+    sign = "+" if is_positive else ""
 
-    with col1:
-        is_positive = data['change'] >= 0
-        pnl_class = "gain" if is_positive else "loss"
-        sign = "+" if is_positive else ""
+    row1_col1, row1_col2 = st.columns(2)
+    with row1_col1:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">Period Return</div>
-            <div class="metric-value" style="color: var(--{pnl_class});">{sign}${data['change']:,.2f}</div>
-            <span class="metric-change {pnl_class}">{sign}{data['change_pct']:.2f}%</span>
+            <div class="metric-value" style="color: var(--{pnl_class});">{sign}${data['change']:,.0f}</div>
+            <span class="metric-change {pnl_class}">{sign}{data['change_pct']:.1f}%</span>
         </div>
         """, unsafe_allow_html=True)
 
-    with col2:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-label">Starting Value</div>
-            <div class="metric-value">${data['start_value']:,.2f}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with col3:
+    with row1_col2:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">Current Value</div>
-            <div class="metric-value">${data['end_value']:,.2f}</div>
+            <div class="metric-value">${data['end_value']:,.0f}</div>
         </div>
         """, unsafe_allow_html=True)
 
-    with col4:
+    row2_col1, row2_col2 = st.columns(2)
+    with row2_col1:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-label">Start Value</div>
+            <div class="metric-value">${data['start_value']:,.0f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with row2_col2:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">Period High</div>
-            <div class="metric-value" style="color: var(--gain);">${data['high']:,.2f}</div>
+            <div class="metric-value" style="color: var(--gain);">${data['high']:,.0f}</div>
         </div>
         """, unsafe_allow_html=True)
 

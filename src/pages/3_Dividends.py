@@ -15,7 +15,7 @@ st.set_page_config(
     page_title="Dividends - Daruma",
     page_icon="🎯",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # Apply Alpine Dusk theme
@@ -153,31 +153,30 @@ def main():
     if not data['connected']:
         st.warning("⚠️ Not connected to database.")
 
-    # Summary metrics
-    col1, col2, col3 = st.columns(3)
+    # Summary metrics - single column on mobile for better readability
+    avg_monthly = data['this_year'] / 12 if data['this_year'] > 0 else 0
 
-    with col1:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-label">Total Received</div>
-            <div class="metric-value-large" style="color: var(--gain);">${data['total']:,.2f}</div>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="metric-card" style="margin-bottom: 12px;">
+        <div class="metric-label">Total Received</div>
+        <div class="metric-value-large" style="color: var(--gain);">${data['total']:,.0f}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    with col2:
+    row1_col1, row1_col2 = st.columns(2)
+    with row1_col1:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">This Year</div>
-            <div class="metric-value">${data['this_year']:,.2f}</div>
+            <div class="metric-value">${data['this_year']:,.0f}</div>
         </div>
         """, unsafe_allow_html=True)
 
-    with col3:
-        avg_monthly = data['this_year'] / 12 if data['this_year'] > 0 else 0
+    with row1_col2:
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-label">Monthly Average</div>
-            <div class="metric-value">${avg_monthly:,.2f}</div>
+            <div class="metric-label">Monthly Avg</div>
+            <div class="metric-value">${avg_monthly:,.0f}</div>
         </div>
         """, unsafe_allow_html=True)
 

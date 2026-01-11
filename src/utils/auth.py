@@ -252,13 +252,13 @@ def _show_login_page(show_error: bool = False):
         """, unsafe_allow_html=True)
 
         # Form inputs (rendered by Streamlit but styled by CSS)
-        st.text_input("Email", key="login_email", placeholder="tu@email.com")
+        st.text_input("Email", key="login_email", placeholder="your@email.com")
         st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
 
         if show_error:
-            st.error("Email o password incorrectos")
+            st.error("Incorrect email or password")
 
-        st.button("Iniciar Sesion", on_click=_credentials_entered, use_container_width=True)
+        st.button("Sign In", on_click=_credentials_entered, use_container_width=True)
 
         st.markdown("""
         <div class="login-quote">

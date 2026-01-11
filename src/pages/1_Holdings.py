@@ -13,7 +13,7 @@ st.set_page_config(
     page_title="Holdings - Daruma",
     page_icon="🎯",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # Apply Alpine Dusk theme
@@ -74,7 +74,7 @@ def get_logo_url(ticker: str, asset_type: str) -> str:
 
 
 def render_holding_card(h: dict):
-    """Render a holding as a styled card with logo."""
+    """Render a holding as a mobile-friendly card with logo."""
     is_positive = h['pnl_pct'] >= 0
     pnl_class = "gain" if is_positive else "loss"
     sign = "+" if is_positive else ""
@@ -87,84 +87,58 @@ def render_holding_card(h: dict):
         'CRYPTO': '#f59e0b'
     }
     type_color = type_colors.get(h['type'], '#8b5cf6')
-
-    # Get logo URL
     logo_url = get_logo_url(h['ticker'], h['type'])
 
+    # Mobile-friendly stacked card layout
     st.markdown(f"""
-    <div class="data-row" style="padding: 20px;">
-        <div style="display: flex; align-items: center; flex: 2;">
-            <div style="
-                width: 44px;
-                height: 44px;
-                border-radius: 12px;
-                background: linear-gradient(135deg, {type_color}22 0%, {type_color}11 100%);
-                border: 1px solid {type_color}44;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin-right: 14px;
-                overflow: hidden;
-                position: relative;
-            ">
-                <img
-                    src="{logo_url}"
-                    alt="{h['ticker']}"
-                    style="
-                        width: 28px;
-                        height: 28px;
-                        object-fit: contain;
-                        border-radius: 4px;
-                    "
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                />
+    <div class="data-row-mobile">
+        <div class="row-header">
+            <div class="row-left">
                 <div style="
-                    display: none;
-                    width: 100%;
-                    height: 100%;
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 10px;
+                    background: linear-gradient(135deg, {type_color}22 0%, {type_color}11 100%);
+                    border: 1px solid {type_color}44;
+                    display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-weight: 700;
-                    font-size: 14px;
-                    color: {type_color};
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                ">{initials}</div>
-            </div>
-            <div>
-                <div class="ticker-name">{h['ticker']}</div>
-                <div class="ticker-details">
-                    <span style="
-                        display: inline-block;
-                        padding: 2px 8px;
-                        background: {type_color}22;
-                        border-radius: 4px;
-                        font-size: 10px;
-                        color: {type_color};
-                        margin-right: 8px;
-                    ">{h['type']}</span>
-                    {h['shares']:.4f} shares
+                    overflow: hidden;
+                    position: relative;
+                    flex-shrink: 0;
+                ">
+                    <img src="{logo_url}" alt="{h['ticker']}" style="width: 22px; height: 22px; object-fit: contain;"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                    <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center;
+                        font-weight: 700; font-size: 11px; color: {type_color}; position: absolute; top: 0; left: 0;">{initials}</div>
+                </div>
+                <div>
+                    <div class="ticker-name">{h['ticker']}</div>
+                    <div class="ticker-details">
+                        <span style="padding: 1px 6px; background: {type_color}22; border-radius: 4px; font-size: 9px; color: {type_color};">{h['type']}</span>
+                        <span style="margin-left: 6px;">{h['shares']:.2f} shares</span>
+                    </div>
                 </div>
             </div>
+            <span class="pnl-badge {pnl_class}">{sign}{h['pnl_pct']:.1f}%</span>
         </div>
-        <div style="flex: 1; text-align: center;">
-            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">AVG PRICE</div>
-            <div class="value-display">${h['avg_price']:,.2f}</div>
-        </div>
-        <div style="flex: 1; text-align: center;">
-            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">CURRENT</div>
-            <div class="value-display">${h['current_price']:,.2f}</div>
-        </div>
-        <div style="flex: 1; text-align: center;">
-            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">VALUE</div>
-            <div class="value-display">${h['current_value']:,.2f}</div>
-        </div>
-        <div style="flex: 1; text-align: right;">
-            <span class="pnl-badge {pnl_class}" style="font-size: 14px;">
-                {sign}${h['pnl']:,.2f}<br>
-                <span style="font-size: 12px;">({sign}{h['pnl_pct']:.1f}%)</span>
-            </span>
+        <div class="row-details">
+            <div class="detail-item">
+                <div class="detail-label">Avg Price</div>
+                <div class="detail-value">${h['avg_price']:,.2f}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Current</div>
+                <div class="detail-value">${h['current_price']:,.2f}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Value</div>
+                <div class="detail-value">${h['current_value']:,.0f}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">P&L</div>
+                <div class="detail-value" style="color: var(--{pnl_class});">{sign}${h['pnl']:,.0f}</div>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -173,24 +147,22 @@ def render_holding_card(h: dict):
 def main():
     page_header("Holdings", "Your complete portfolio breakdown", "💼")
 
-    # Filters row
-    col1, col2, col3 = st.columns([2, 2, 2])
+    # Filters - 2 columns for better mobile display
+    sort_options = {
+        "Value (High to Low)": ("current_value", True),
+        "Value (Low to High)": ("current_value", False),
+        "Gain % (High)": ("pnl_pct", True),
+        "Loss % (High)": ("pnl_pct", False),
+        "Ticker (A-Z)": ("ticker", False)
+    }
 
+    col1, col2 = st.columns(2)
     with col1:
-        sort_options = {
-            "Value (High to Low)": ("current_value", True),
-            "Value (Low to High)": ("current_value", False),
-            "Gain % (High)": ("pnl_pct", True),
-            "Loss % (High)": ("pnl_pct", False),
-            "Ticker (A-Z)": ("ticker", False)
-        }
-        sort_by = st.selectbox("Sort by", list(sort_options.keys()), label_visibility="collapsed")
-
+        sort_by = st.selectbox("Sort by", list(sort_options.keys()))
     with col2:
-        filter_type = st.selectbox("Filter by type", ["All", "Stocks", "Funds", "Crypto"], label_visibility="collapsed")
+        filter_type = st.selectbox("Filter", ["All", "Stocks", "Funds", "Crypto"])
 
-    with col3:
-        search = st.text_input("Search ticker", placeholder="🔍 Search...", label_visibility="collapsed")
+    search = st.text_input("Search", placeholder="Search ticker...")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -235,40 +207,41 @@ def main():
     total_pnl = total_value - total_cost
     total_pnl_pct = (total_pnl / total_cost) * 100 if total_cost > 0 else 0
 
-    # Stats row
-    col1, col2, col3, col4 = st.columns(4)
+    # Stats - 2x2 grid for mobile
+    pnl_class = "gain" if total_pnl >= 0 else "loss"
+    sign = "+" if total_pnl >= 0 else ""
 
-    with col1:
+    row1_col1, row1_col2 = st.columns(2)
+    with row1_col1:
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-label">Total Assets</div>
+            <div class="metric-label">Assets</div>
             <div class="metric-value">{len(holdings)}</div>
         </div>
         """, unsafe_allow_html=True)
 
-    with col2:
+    with row1_col2:
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-label">Portfolio Value</div>
-            <div class="metric-value">${total_value:,.2f}</div>
+            <div class="metric-label">Value</div>
+            <div class="metric-value">${total_value:,.0f}</div>
         </div>
         """, unsafe_allow_html=True)
 
-    with col3:
+    row2_col1, row2_col2 = st.columns(2)
+    with row2_col1:
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-label">Total Invested</div>
-            <div class="metric-value">${total_cost:,.2f}</div>
+            <div class="metric-label">Invested</div>
+            <div class="metric-value">${total_cost:,.0f}</div>
         </div>
         """, unsafe_allow_html=True)
 
-    with col4:
-        pnl_class = "gain" if total_pnl >= 0 else "loss"
-        sign = "+" if total_pnl >= 0 else ""
+    with row2_col2:
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-label">Total P&L</div>
-            <div class="metric-value" style="color: var(--{pnl_class});">{sign}${total_pnl:,.2f}</div>
+            <div class="metric-label">P&L</div>
+            <div class="metric-value" style="color: var(--{pnl_class});">{sign}${total_pnl:,.0f}</div>
             <span class="metric-change {pnl_class}">{sign}{total_pnl_pct:.1f}%</span>
         </div>
         """, unsafe_allow_html=True)
