@@ -114,8 +114,10 @@ def get_current_prices(client: Client) -> dict:
 
 def get_price_history(client: Client, ticker: str, days: int = 365) -> list:
     """Get price history for a ticker."""
-    from_date = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-    from_date = from_date.replace(day=from_date.day - days) if days else None
+    from datetime import timedelta
+    from_date = None
+    if days:
+        from_date = datetime.utcnow() - timedelta(days=days)
 
     query = client.table('price_history').select('*').eq('ticker', ticker)
     if from_date:
@@ -228,9 +230,10 @@ def insert_portfolio_snapshot(client: Client, snapshot_date: date,
 
 def get_portfolio_snapshots(client: Client, days: Optional[int] = None) -> list:
     """Get portfolio snapshots for chart."""
+    from datetime import timedelta
     query = client.table('portfolio_snapshots').select('*')
     if days:
-        from_date = date.today().replace(day=date.today().day - days)
+        from_date = date.today() - timedelta(days=days)
         query = query.gte('snapshot_date', from_date.isoformat())
     response = query.order('snapshot_date').execute()
     return response.data
