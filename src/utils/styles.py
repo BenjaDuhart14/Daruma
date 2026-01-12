@@ -793,10 +793,21 @@ def get_base_styles():
                 min-width: 0 !important;
             }
 
-            /* Better touch targets for buttons */
+            /* Compact period selector buttons on mobile */
             .stButton > button {
-                min-height: 44px !important;
-                padding: 12px 16px !important;
+                min-height: 38px !important;
+                padding: 8px 10px !important;
+                font-size: 12px !important;
+            }
+
+            /* Primary button (selected period) */
+            .stButton > button[data-testid="baseButton-primary"] {
+                background: var(--accent-purple) !important;
+            }
+
+            /* Secondary button (unselected period) */
+            .stButton > button[data-testid="baseButton-secondary"] {
+                background: rgba(20, 20, 35, 0.6) !important;
             }
 
             /* Input fields */
@@ -834,6 +845,13 @@ def get_base_styles():
                 width: 28px;
                 height: 28px;
                 font-size: 9px;
+            }
+
+            /* Even more compact buttons on small phones */
+            .stButton > button {
+                min-height: 36px !important;
+                padding: 6px 8px !important;
+                font-size: 11px !important;
             }
         }
 
