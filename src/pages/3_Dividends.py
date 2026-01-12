@@ -100,12 +100,14 @@ def create_yearly_chart(by_year: list):
         ),
         text=[f"${y['amount']:,.0f}" for y in by_year],
         textposition='outside',
-        textfont=dict(color=CHART_COLORS['gain'], size=12, family='JetBrains Mono')
+        textfont=dict(color=CHART_COLORS['gain'], size=10, family='JetBrains Mono')
     ))
 
-    layout = get_chart_layout(height=280)
+    layout = get_chart_layout(height=220)
     layout.update(
-        yaxis=dict(showgrid=True, gridcolor='rgba(148, 163, 184, 0.08)', tickprefix='$'),
+        margin=dict(l=5, r=5, t=25, b=30),
+        yaxis=dict(showgrid=True, gridcolor='rgba(148, 163, 184, 0.08)', tickprefix='$', tickfont=dict(size=10)),
+        xaxis=dict(tickfont=dict(size=10)),
     )
     fig.update_layout(**layout)
 
@@ -130,13 +132,14 @@ def create_ticker_chart(by_ticker: list):
             cornerradius=4
         ),
         text=[f"${t['amount']:,.0f}" for t in by_ticker],
-        textposition='outside',
-        textfont=dict(size=11, family='JetBrains Mono')
+        textposition='inside',
+        textfont=dict(size=10, family='JetBrains Mono', color='white'),
+        insidetextanchor='end'
     ))
 
     layout = get_chart_layout(height=320)
     layout.update(
-        margin=dict(l=70, r=70, t=10, b=10),
+        margin=dict(l=50, r=10, t=10, b=10),
         xaxis=dict(showgrid=True, gridcolor='rgba(148, 163, 184, 0.08)', tickprefix='$'),
         yaxis=dict(showgrid=False, autorange='reversed'),
     )

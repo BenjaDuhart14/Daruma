@@ -90,10 +90,10 @@ def create_performance_chart(data: dict):
         x=[data['dates'][max_idx]],
         y=[data['high']],
         mode='markers+text',
-        marker=dict(color=CHART_COLORS['gain'], size=10),
-        text=[f"High: ${data['high']:,.0f}"],
+        marker=dict(color=CHART_COLORS['gain'], size=8),
+        text=[f"${data['high']:,.0f}"],
         textposition='top center',
-        textfont=dict(size=11, color=CHART_COLORS['gain']),
+        textfont=dict(size=9, color=CHART_COLORS['gain']),
         hoverinfo='skip'
     ))
 
@@ -101,16 +101,18 @@ def create_performance_chart(data: dict):
         x=[data['dates'][min_idx]],
         y=[data['low']],
         mode='markers+text',
-        marker=dict(color=CHART_COLORS['loss'], size=10),
-        text=[f"Low: ${data['low']:,.0f}"],
+        marker=dict(color=CHART_COLORS['loss'], size=8),
+        text=[f"${data['low']:,.0f}"],
         textposition='bottom center',
-        textfont=dict(size=11, color=CHART_COLORS['loss']),
+        textfont=dict(size=9, color=CHART_COLORS['loss']),
         hoverinfo='skip'
     ))
 
-    layout = get_chart_layout(height=350)
+    layout = get_chart_layout(height=280)
     layout.update(
-        yaxis=dict(showgrid=True, gridcolor='rgba(148, 163, 184, 0.08)', tickprefix='$'),
+        margin=dict(l=5, r=5, t=20, b=30),
+        yaxis=dict(showgrid=True, gridcolor='rgba(148, 163, 184, 0.08)', tickprefix='$', tickfont=dict(size=10)),
+        xaxis=dict(tickfont=dict(size=10)),
     )
     fig.update_layout(**layout)
 
@@ -131,13 +133,14 @@ def create_asset_bar_chart(assets: list):
         orientation='h',
         marker=dict(color=colors, cornerradius=4),
         text=[f"{'+' if a['change_pct'] >= 0 else ''}{a['change_pct']:.1f}%" for a in assets],
-        textposition='outside',
-        textfont=dict(size=11, family='JetBrains Mono')
+        textposition='inside',
+        textfont=dict(size=10, family='JetBrains Mono', color='white'),
+        insidetextanchor='end'
     ))
 
     layout = get_chart_layout(height=400)
     layout.update(
-        margin=dict(l=70, r=70, t=10, b=10),
+        margin=dict(l=50, r=10, t=10, b=10),
         xaxis=dict(showgrid=True, gridcolor='rgba(148, 163, 184, 0.08)', ticksuffix='%'),
         yaxis=dict(showgrid=False, autorange='reversed'),
     )

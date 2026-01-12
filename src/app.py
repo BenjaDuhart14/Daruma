@@ -144,11 +144,12 @@ def create_portfolio_chart(period: str, current_value: float = 0):
         hovertemplate='<b>$%{y:,.2f}</b><extra></extra>'
     ))
 
-    # Layout
-    layout = get_chart_layout(height=280)
+    # Layout - mobile optimized
+    layout = get_chart_layout(height=250)
     layout.update(
-        xaxis=dict(showgrid=False, showticklabels=True, color='#64748b'),
-        yaxis=dict(showgrid=True, gridcolor='rgba(148, 163, 184, 0.08)', tickprefix='$', color='#64748b'),
+        margin=dict(l=5, r=5, t=10, b=30),
+        xaxis=dict(showgrid=False, showticklabels=True, color='#64748b', tickfont=dict(size=10)),
+        yaxis=dict(showgrid=True, gridcolor='rgba(148, 163, 184, 0.08)', tickprefix='$', color='#64748b', tickfont=dict(size=10)),
     )
     fig.update_layout(**layout)
 
@@ -181,13 +182,15 @@ def create_movers_chart(holdings: list, top_n: int = 5, show_gainers: bool = Tru
         ),
         text=[f"{'+' if m['pnl_pct'] > 0 else ''}{m['pnl_pct']:.1f}%" for m in movers],
         textposition='outside',
-        textfont=dict(color=bar_color, size=12, family='JetBrains Mono')
+        textfont=dict(color=bar_color, size=10, family='JetBrains Mono')
     ))
 
-    layout = get_chart_layout(height=200)
+    layout = get_chart_layout(height=180)
     layout.update(
+        margin=dict(l=5, r=5, t=25, b=30),
         yaxis=dict(showgrid=False, showticklabels=False),
-        bargap=0.4
+        xaxis=dict(tickfont=dict(size=10)),
+        bargap=0.3
     )
     fig.update_layout(**layout)
 
