@@ -13,16 +13,45 @@ This document outlines the remaining work to have Daruma fully functional as a p
 **Status**: COMPLETED
 **Priority**: CRITICAL
 
-**Problem**: `supabase_client.py` uses `os.getenv()` but Streamlit Cloud secrets are commented out.
+**Problem**: `supabase_client.py` used `os.getenv()` which works locally and in GitHub Actions, but Streamlit Cloud stores secrets via `st.secrets` which is accessed differently.
 
-**Solution**:
-1. Go to https://share.streamlit.io
-2. Find Daruma app -> Settings -> Secrets
-3. Add:
-```toml
-SUPABASE_URL = "https://pvxetjsadcgaeeqmauzz.supabase.co"
-SUPABASE_KEY = "your-key-here"
+**Root Cause**: Initially tried `st.secrets.get('KEY')` but `st.secrets` doesn't support `.get()` method - must use bracket notation `st.secrets['KEY']`.
+
+**Solution** (implemented in `src/utils/supabase_client.py`):
+```python
+def get_client() -> Client:
+    # Try environment variables first (local dev, GitHub Actions)
+    url = os.getenv('SUPABASE_URL')
+    key = os.getenv('SUPABASE_KEY')
+
+    # Fallback to Streamlit secrets (Streamlit Cloud)
+    if not url or not key:
+        try:
+            import streamlit as st
+            if not url and 'SUPABASE_URL' in st.secrets:
+                url = st.secrets['SUPABASE_URL']
+            if not key and 'SUPABASE_KEY' in st.secrets:
+                key = st.secrets['SUPABASE_KEY']
+        except Exception:
+            pass
+
+    if not url or not key:
+        raise ValueError('SUPABASE_URL and SUPABASE_KEY must be set')
+
+    return create_client(url, key)
 ```
+
+**Streamlit Cloud Secrets Format** (in dashboard Settings -> Secrets):
+```toml
+[auth]
+email = "your-email@example.com"
+password = "your-password"
+
+SUPABASE_URL = "https://pvxetjsadcgaeeqmauzz.supabase.co"
+SUPABASE_KEY = "your-supabase-anon-key"
+```
+
+**Key Learning**: Always use `st.secrets['KEY']` bracket notation, NOT `st.secrets.get('KEY')`.
 
 ---
 
