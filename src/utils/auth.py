@@ -69,6 +69,20 @@ def _apply_login_styles():
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
 
+        /* Hide sidebar completely on login page */
+        [data-testid="stSidebar"] {
+            display: none !important;
+        }
+        [data-testid="stSidebarNav"] {
+            display: none !important;
+        }
+        [data-testid="collapsedControl"] {
+            display: none !important;
+        }
+        section[data-testid="stSidebar"] {
+            display: none !important;
+        }
+
         /* Login container */
         .login-container {
             position: relative;
