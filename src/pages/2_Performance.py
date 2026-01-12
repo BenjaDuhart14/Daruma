@@ -6,8 +6,9 @@ Alpine Dusk Theme
 import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date
 import numpy as np
+from utils import supabase_client as db
 from utils.auth import check_password
 from utils.styles import apply_styles, section_label, page_header, get_chart_layout, CHART_COLORS
 
@@ -25,43 +26,90 @@ apply_styles()
 check_password()
 
 
-def get_mock_performance(period: str):
-    """Mock performance data - replace with Supabase calls."""
+@st.cache_data(ttl=300)
+def get_portfolio_performance(period: str):
+    """Get real portfolio performance from Supabase snapshots."""
     days_map = {'1D': 1, '1W': 7, '1M': 30, '3M': 90, 'YTD': 180, '1Y': 365, 'ALL': 730}
     days = days_map.get(period, 30)
 
-    np.random.seed(42)
-    dates = pd.date_range(end=datetime.now(), periods=days, freq='D')
-    base = 75000
-    values = base + np.cumsum(np.random.randn(days) * 300)
-    values[-1] = 81889.40
+    try:
+        client = db.get_client()
+        snapshots = db.get_portfolio_snapshots(client, days=days)
 
-    return {
-        'dates': dates,
-        'values': values,
-        'start_value': values[0],
-        'end_value': values[-1],
-        'change': values[-1] - values[0],
-        'change_pct': ((values[-1] - values[0]) / values[0]) * 100,
-        'high': max(values),
-        'low': min(values)
-    }
+        if snapshots and len(snapshots) > 1:
+            dates = pd.to_datetime([s['snapshot_date'] for s in snapshots])
+            values = np.array([float(s['total_value'] or 0) for s in snapshots])
+
+            return {
+                'dates': dates,
+                'values': values,
+                'start_value': values[0],
+                'end_value': values[-1],
+                'change': values[-1] - values[0],
+                'change_pct': ((values[-1] - values[0]) / values[0]) * 100 if values[0] > 0 else 0,
+                'high': max(values),
+                'low': min(values),
+                'connected': True
+            }
+        else:
+            # Get current portfolio value as fallback
+            summary = db.get_portfolio_summary(client)
+            current_value = float(summary.get('total_value') or 0)
+            total_cost = float(summary.get('total_invested') or 0)
+
+            dates = pd.date_range(end=datetime.now(), periods=2, freq='D')
+            values = np.array([total_cost, current_value]) if total_cost > 0 else np.array([current_value, current_value])
+
+            return {
+                'dates': dates,
+                'values': values,
+                'start_value': total_cost if total_cost > 0 else current_value,
+                'end_value': current_value,
+                'change': current_value - total_cost,
+                'change_pct': ((current_value - total_cost) / total_cost) * 100 if total_cost > 0 else 0,
+                'high': current_value,
+                'low': min(total_cost, current_value) if total_cost > 0 else current_value,
+                'connected': True
+            }
+    except Exception as e:
+        st.error(f"Database error: {str(e)}")
+        return {
+            'dates': pd.date_range(end=datetime.now(), periods=2, freq='D'),
+            'values': np.array([0, 0]),
+            'start_value': 0,
+            'end_value': 0,
+            'change': 0,
+            'change_pct': 0,
+            'high': 0,
+            'low': 0,
+            'connected': False
+        }
 
 
-def get_mock_asset_performance(period: str):
-    """Mock per-asset performance."""
-    return [
-        {'ticker': 'BTC', 'change_pct': 15.5, 'change': 637.50},
-        {'ticker': 'TSLA', 'change_pct': 8.2, 'change': 410.00},
-        {'ticker': 'ETH', 'change_pct': 5.1, 'change': 225.30},
-        {'ticker': 'VOO', 'change_pct': 3.2, 'change': 558.40},
-        {'ticker': 'GOOGL', 'change_pct': 2.8, 'change': 80.50},
-        {'ticker': 'QQQM', 'change_pct': 1.9, 'change': 100.20},
-        {'ticker': 'ARKK', 'change_pct': 0.5, 'change': 24.00},
-        {'ticker': 'COST', 'change_pct': -0.3, 'change': -12.90},
-        {'ticker': 'AAPL', 'change_pct': -1.2, 'change': -40.50},
-        {'ticker': 'AMZN', 'change_pct': -2.1, 'change': -166.20},
-    ]
+@st.cache_data(ttl=300)
+def get_asset_performance():
+    """Get real per-asset performance from holdings."""
+    try:
+        client = db.get_client()
+        holdings = db.get_holdings_with_value(client)
+
+        if not holdings:
+            return []
+
+        # Calculate P&L percentage for each holding
+        assets = []
+        for h in holdings:
+            pnl_pct = float(h.get('pnl_percent') or 0)
+            pnl = float(h.get('pnl') or 0)
+            assets.append({
+                'ticker': h['ticker'],
+                'change_pct': pnl_pct,
+                'change': pnl
+            })
+
+        return sorted(assets, key=lambda x: x['change_pct'], reverse=True)
+    except Exception:
+        return []
 
 
 def create_performance_chart(data: dict):
@@ -176,8 +224,11 @@ def main():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Get data
-    data = get_mock_performance(st.session_state.perf_period)
+    # Get real data from Supabase
+    data = get_portfolio_performance(st.session_state.perf_period)
+
+    if not data.get('connected', True):
+        st.warning("⚠️ Could not connect to database.")
 
     # Summary metrics - 2x2 grid for mobile
     is_positive = data['change'] >= 0
@@ -231,17 +282,21 @@ def main():
     # Per-asset performance
     section_label("Performance by Asset")
 
-    asset_data = get_mock_asset_performance(st.session_state.perf_period)
-    bar_chart = create_asset_bar_chart(asset_data)
-    st.plotly_chart(bar_chart, use_container_width=True, config={'displayModeBar': False})
+    asset_data = get_asset_performance()
 
-    # Table view
-    with st.expander("📊 View detailed table"):
-        df = pd.DataFrame(asset_data)
-        df['change_pct'] = df['change_pct'].apply(lambda x: f"{'+' if x >= 0 else ''}{x:.2f}%")
-        df['change'] = df['change'].apply(lambda x: f"${x:,.2f}")
-        df.columns = ['Ticker', 'Change %', 'Change $']
-        st.dataframe(df, use_container_width=True, hide_index=True)
+    if asset_data:
+        bar_chart = create_asset_bar_chart(asset_data)
+        st.plotly_chart(bar_chart, use_container_width=True, config={'displayModeBar': False})
+
+        # Table view
+        with st.expander("📊 View detailed table"):
+            df = pd.DataFrame(asset_data)
+            df['change_pct'] = df['change_pct'].apply(lambda x: f"{'+' if x >= 0 else ''}{x:.2f}%")
+            df['change'] = df['change'].apply(lambda x: f"${x:,.2f}")
+            df.columns = ['Ticker', 'Change %', 'Change $']
+            st.dataframe(df, use_container_width=True, hide_index=True)
+    else:
+        st.info("No holdings data available. Add transactions to see performance by asset.")
 
 
 if __name__ == "__main__":
