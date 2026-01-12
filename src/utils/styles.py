@@ -884,29 +884,48 @@ def get_base_styles():
         .data-row-mobile .row-details {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            gap: 6px;
         }
 
         .data-row-mobile .detail-item {
             text-align: center;
-            padding: 8px;
+            padding: 6px;
             background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
+            border-radius: 6px;
         }
 
         .data-row-mobile .detail-label {
-            font-size: 9px;
+            font-size: 8px;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             margin-bottom: 2px;
         }
 
         .data-row-mobile .detail-value {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--text-primary);
+        }
+
+        /* Small phone optimizations for data rows */
+        @media (max-width: 375px) {
+            .data-row-mobile {
+                padding: 10px;
+            }
+
+            .data-row-mobile .row-details {
+                gap: 4px;
+            }
+
+            .data-row-mobile .detail-item {
+                padding: 5px;
+            }
+
+            .data-row-mobile .detail-value {
+                font-size: 11px;
+            }
         }
 
         /* Period buttons container - horizontal scroll on mobile */
