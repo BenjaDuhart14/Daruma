@@ -7,10 +7,10 @@ This document outlines the remaining work to have Daruma fully functional as a p
 
 ---
 
-## CURRENT SPRINT: Data & UI Fixes
+## CURRENT SPRINT: Data & UI Fixes - ALL COMPLETE
 
 ### Phase 0A: Fix Supabase Connection in Streamlit Cloud
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: CRITICAL
 
 **Problem**: `supabase_client.py` uses `os.getenv()` but Streamlit Cloud secrets are commented out.
@@ -27,7 +27,7 @@ SUPABASE_KEY = "your-key-here"
 ---
 
 ### Phase 0B: Populate current_prices Table
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: CRITICAL
 
 **Problem**: `current_prices` table is empty, so `holdings_with_value` view shows NULL values.
@@ -44,7 +44,7 @@ Or trigger GitHub Actions manually.
 ---
 
 ### Phase 0C: Fix GitHub Actions Workflow
-**Status**: IN PROGRESS
+**Status**: COMPLETED
 **Priority**: CRITICAL
 
 **Problem**: Workflow ran 6 minutes ago but nothing happened.
@@ -58,7 +58,7 @@ Or trigger GitHub Actions manually.
 ---
 
 ### Phase 1: Hide Sidebar Navigation on Login Page
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: CRITICAL
 
 **Problem**: Users can see page navigation (Holdings, Performance, etc.) before authenticating.
@@ -74,7 +74,7 @@ Or trigger GitHub Actions manually.
 ---
 
 ### Phase 2: Delete Import Page
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 
 **Problem**: Import functionality should be done via CLI, not exposed in the app.
@@ -87,7 +87,7 @@ rm src/pages/5_Import.py
 ---
 
 ### Phase 3: Add Transaction History Log
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 
 **Problem**: No way to verify transactions were saved correctly in Add Transaction page.
@@ -104,7 +104,7 @@ rm src/pages/5_Import.py
 ---
 
 ### Phase 4: Fix Chart Overflow Issues
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: CRITICAL
 
 **Problem**: Charts have 70px left/right margins, leaving only 235px on 375px screens.
@@ -123,7 +123,7 @@ rm src/pages/5_Import.py
 ---
 
 ### Phase 5: Mobile-Friendly Period Filters
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 
 **Problem**: 4-column button layout breaks on mobile (480px = ~114px per button).
@@ -141,7 +141,7 @@ rm src/pages/5_Import.py
 ---
 
 ### Phase 6: Fix Data Row/Card Display on Mobile
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: MEDIUM
 
 **Problem**: 2-column grid too cramped at 375px width.
@@ -158,7 +158,7 @@ rm src/pages/5_Import.py
 ---
 
 ### Phase 7: Connect Performance Page to Real Data
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 
 **Problem**: Performance page uses mock data (`get_mock_performance()`), not real portfolio.
