@@ -15,8 +15,18 @@ load_dotenv()
 
 def get_client() -> Client:
     """Get Supabase client instance."""
+    # Try environment variables first (local dev, GitHub Actions)
     url = os.getenv('SUPABASE_URL')
     key = os.getenv('SUPABASE_KEY')
+
+    # Fallback to Streamlit secrets (Streamlit Cloud)
+    if not url or not key:
+        try:
+            import streamlit as st
+            url = st.secrets.get('SUPABASE_URL', url)
+            key = st.secrets.get('SUPABASE_KEY', key)
+        except Exception:
+            pass
 
     if not url or not key:
         raise ValueError('SUPABASE_URL and SUPABASE_KEY must be set')
