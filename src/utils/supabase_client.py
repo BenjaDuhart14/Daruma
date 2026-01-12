@@ -23,8 +23,10 @@ def get_client() -> Client:
     if not url or not key:
         try:
             import streamlit as st
-            url = st.secrets.get('SUPABASE_URL', url)
-            key = st.secrets.get('SUPABASE_KEY', key)
+            if not url and 'SUPABASE_URL' in st.secrets:
+                url = st.secrets['SUPABASE_URL']
+            if not key and 'SUPABASE_KEY' in st.secrets:
+                key = st.secrets['SUPABASE_KEY']
         except Exception:
             pass
 
@@ -53,6 +55,12 @@ def insert_transaction(client: Client, transaction: dict) -> dict:
     """Insert a new transaction."""
     response = client.table('transactions').insert(transaction).execute()
     return response.data[0] if response.data else None
+
+
+def delete_transaction(client: Client, transaction_id: int) -> bool:
+    """Delete a transaction by ID."""
+    response = client.table('transactions').delete().eq('id', transaction_id).execute()
+    return len(response.data) > 0 if response.data else False
 
 
 def transaction_exists(client: Client, ticker: str, date_str: str, quantity: float) -> bool:

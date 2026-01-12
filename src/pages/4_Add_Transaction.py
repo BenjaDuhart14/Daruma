@@ -34,14 +34,27 @@ def get_existing_tickers():
 
 
 @st.cache_data(ttl=60)
-def get_recent_transactions():
+def get_recent_transactions(limit: int = 20):
     """Get recent transactions for display."""
     try:
         client = db.get_client()
         transactions = db.get_all_transactions(client)
-        return transactions[:5]
+        return transactions[:limit]
     except Exception:
         return []
+
+
+def delete_transaction_by_id(tx_id: int) -> bool:
+    """Delete a transaction and clear cache."""
+    try:
+        client = db.get_client()
+        result = db.delete_transaction(client, tx_id)
+        if result:
+            get_existing_tickers.clear()
+            get_recent_transactions.clear()
+        return result
+    except Exception:
+        return False
 
 
 def save_transaction(transaction: dict) -> bool:
@@ -232,32 +245,74 @@ def main():
 
     st.markdown("---")
 
-    # Recent transactions
-    section_label("Recent Transactions")
+    # Transaction Log
+    section_label("Transaction Log")
 
-    recent = get_recent_transactions()
+    recent = get_recent_transactions(limit=20)
+
     if recent:
-        for tx in recent:
+        # Filter controls
+        col_filter1, col_filter2 = st.columns([2, 1])
+
+        with col_filter1:
+            all_tickers = sorted(set(tx['ticker'] for tx in recent))
+            filter_ticker = st.selectbox(
+                "Filter by ticker",
+                ["All"] + all_tickers,
+                key="tx_filter"
+            )
+
+        with col_filter2:
+            filter_type = st.selectbox(
+                "Filter by type",
+                ["All", "BUY", "SELL"],
+                key="type_filter"
+            )
+
+        # Apply filters
+        filtered = recent
+        if filter_ticker != "All":
+            filtered = [tx for tx in filtered if tx['ticker'] == filter_ticker]
+        if filter_type != "All":
+            filtered = [tx for tx in filtered if tx['type'] == filter_type]
+
+        st.caption(f"Showing {len(filtered)} of {len(recent)} transactions")
+
+        # Transaction list
+        for tx in filtered:
             is_buy = tx['type'] == 'BUY'
             tx_color = "#10b981" if is_buy else "#ef4444"
             tx_icon = "📈" if is_buy else "📉"
+            tx_id = tx.get('id')
 
-            st.markdown(f"""
-            <div class="data-row">
-                <div style="display: flex; align-items: center; flex: 2;">
-                    <div class="ticker-badge" style="background: {tx_color};">
-                        {tx['ticker'][:2]}
+            col_info, col_delete = st.columns([5, 1])
+
+            with col_info:
+                st.markdown(f"""
+                <div class="data-row" style="margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; flex: 2;">
+                        <div class="ticker-badge" style="background: {tx_color};">
+                            {tx['ticker'][:2]}
+                        </div>
+                        <div>
+                            <div class="ticker-name">{tx_icon} {tx['type']} {tx['ticker']}</div>
+                            <div class="ticker-details">{tx['date'][:10] if tx['date'] else ''}</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="ticker-name">{tx_icon} {tx['type']} {tx['ticker']}</div>
-                        <div class="ticker-details">{tx['date'][:10] if tx['date'] else ''}</div>
+                    <div style="text-align: right;">
+                        <div class="value-display">{float(tx['quantity'] or 0):.4f} @ ${float(tx['price'] or 0):,.2f}</div>
+                        <div class="ticker-details">${float(tx['total_amount'] or 0):,.2f}</div>
                     </div>
                 </div>
-                <div style="text-align: right;">
-                    <div class="value-display">{float(tx['quantity'] or 0):.4f} @ ${float(tx['price'] or 0):,.2f}</div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+
+            with col_delete:
+                if tx_id and st.button("🗑️", key=f"del_{tx_id}", help="Delete transaction"):
+                    if delete_transaction_by_id(tx_id):
+                        st.success(f"Deleted {tx['ticker']} transaction")
+                        st.rerun()
+                    else:
+                        st.error("Failed to delete")
     else:
         st.markdown("""
         <div style="
@@ -267,7 +322,7 @@ def main():
             border-radius: 12px;
             border: 1px dashed var(--border-subtle);
         ">
-            <p style="color: var(--text-secondary);">No transactions yet. Add your first transaction above or import from Delta CSV.</p>
+            <p style="color: var(--text-secondary);">No transactions yet. Add your first transaction above.</p>
         </div>
         """, unsafe_allow_html=True)
 
