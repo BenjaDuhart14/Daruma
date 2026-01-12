@@ -18,11 +18,17 @@ def get_client() -> Client:
     url = None
     key = None
 
-    # Try Streamlit secrets first (Streamlit Cloud)
+    # Try Streamlit secrets (Streamlit Cloud)
     try:
         import streamlit as st
-        url = st.secrets["SUPABASE_URL"]
-        key = st.secrets["SUPABASE_KEY"]
+        # Try top-level first
+        if "SUPABASE_URL" in st.secrets:
+            url = st.secrets["SUPABASE_URL"]
+            key = st.secrets["SUPABASE_KEY"]
+        # Try under [auth] section (if user put them there)
+        elif "auth" in st.secrets and "SUPABASE_URL" in st.secrets["auth"]:
+            url = st.secrets["auth"]["SUPABASE_URL"]
+            key = st.secrets["auth"]["SUPABASE_KEY"]
     except Exception:
         pass
 
