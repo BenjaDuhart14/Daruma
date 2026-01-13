@@ -106,7 +106,7 @@ streamlit run src/app.py
 - **Live App**: https://daruma14.streamlit.app/
 - **GitHub Repo**: https://github.com/BenjaDuhart14/Daruma
 - **GitHub Actions**: https://github.com/BenjaDuhart14/Daruma/actions
-- **Supabase**: https://pvxetjsadcgaeeqmauzz.supabase.co
+- **Supabase**: (see Streamlit Cloud secrets)
 
 ---
 

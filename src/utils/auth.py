@@ -1,10 +1,15 @@
 """
 Authentication module for Daruma.
-Simple password protection using Streamlit secrets.
+Secure password protection using bcrypt hashing.
 Alpine Dusk themed login page.
+
+SECURITY: Passwords are stored as bcrypt hashes in Streamlit secrets.
+To generate a hash for your password, run:
+    python -c "import bcrypt; print(bcrypt.hashpw(b'your-password', bcrypt.gensalt()).decode())"
 """
 
 import streamlit as st
+import bcrypt
 
 
 def _apply_login_styles():
@@ -301,15 +306,49 @@ def _show_login_page(show_error: bool = False):
 
 
 def _credentials_entered():
-    """Validate the entered credentials."""
+    """Validate the entered credentials using bcrypt hash verification.
+    
+    Secrets should contain:
+        [auth]
+        email = "user@example.com"
+        password_hash = "$2b$12$..."  # bcrypt hash of the password
+    
+    To generate a password hash:
+        python -c "import bcrypt; print(bcrypt.hashpw(b'your-password', bcrypt.gensalt()).decode())"
+    """
     try:
-        if (st.session_state.get("login_email") == st.secrets["auth"]["email"] and
-            st.session_state.get("login_password") == st.secrets["auth"]["password"]):
-            st.session_state["authenticated"] = True
-            if "login_password" in st.session_state:
-                del st.session_state["login_password"]
+        entered_email = st.session_state.get("login_email", "")
+        entered_password = st.session_state.get("login_password", "")
+        
+        stored_email = st.secrets["auth"]["email"]
+        stored_hash = st.secrets["auth"].get("password_hash")
+        
+        # Support both new bcrypt hash and legacy plain text password
+        if stored_hash:
+            # New secure method: bcrypt hash verification
+            email_match = entered_email == stored_email
+            password_match = bcrypt.checkpw(
+                entered_password.encode('utf-8'),
+                stored_hash.encode('utf-8')
+            )
+            
+            if email_match and password_match:
+                st.session_state["authenticated"] = True
+                # Clear password from session for security
+                if "login_password" in st.session_state:
+                    del st.session_state["login_password"]
+            else:
+                st.session_state["authenticated"] = False
         else:
-            st.session_state["authenticated"] = False
+            # Legacy fallback: plain text password (for backward compatibility)
+            # DEPRECATION WARNING: Update to password_hash for security
+            stored_password = st.secrets["auth"].get("password", "")
+            if entered_email == stored_email and entered_password == stored_password:
+                st.session_state["authenticated"] = True
+                if "login_password" in st.session_state:
+                    del st.session_state["login_password"]
+            else:
+                st.session_state["authenticated"] = False
     except Exception:
         st.session_state["authenticated"] = False
 

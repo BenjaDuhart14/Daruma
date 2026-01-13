@@ -86,7 +86,7 @@ src/favicon.svg               # NEW - Daruma doll SVG favicon
 ## Key URLs
 - **Live App**: https://daruma14.streamlit.app/
 - **GitHub Repo**: https://github.com/BenjaDuhart14/Daruma
-- **Supabase**: https://pvxetjsadcgaeeqmauzz.supabase.co
+- **Supabase**: (see Streamlit Cloud secrets)
 
 ---
 
