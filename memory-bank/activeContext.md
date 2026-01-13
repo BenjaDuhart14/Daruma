@@ -1,9 +1,26 @@
 # Active Context: Daruma
 
 ## Current Focus
-All major UI/UX fixes complete. Supabase connection fixed for Streamlit Cloud. Performance page now uses real data. Ready for iPhone testing.
+All major UI/UX fixes complete. Final polish applied: renamed App to Home, added company logos to Dashboard, fixed dropdown text sizes. Ready for push to GitHub and iPhone testing.
 
-## Recent Changes (This Session - January 12, 2026)
+## Recent Changes (This Session - January 13, 2026)
+
+### 1. Renamed App Page to Home
+- Changed page_title from "Daruma" to "Home - Daruma" in `src/app.py`
+
+### 2. Added Company Logos to Dashboard
+- Added `get_logo_url()` function to `app.py` (same as Holdings page)
+- Updated `render_holding_row()` to display logos with fallback to initials
+- Supports stocks/ETFs via Financial Modeling Prep and crypto via CoinGecko
+
+### 3. Fixed Dropdown Text Size
+- Added `font-size: 14px` to selectbox elements in `styles.py`
+- Fixed dropdown menu item sizes for both desktop and mobile
+- Ensures consistent text size across all dropdown components
+
+---
+
+## Previous Changes (January 12, 2026)
 
 ### 1. Fixed Supabase Connection for Streamlit Cloud
 **Problem**: `supabase_client.py` used `os.getenv()` which works locally and in GitHub Actions, but Streamlit Cloud stores secrets differently via `st.secrets`.
@@ -128,30 +145,17 @@ if not url or not key:
 
 ## Key Files Modified This Session
 ```
-src/utils/supabase_client.py  # Added st.secrets fallback + delete_transaction()
-src/utils/auth.py             # Hide sidebar CSS on login
-src/utils/styles.py           # Compact buttons, smaller data rows
-src/app.py                    # Mobile-optimized charts
-src/pages/2_Performance.py    # Real data from Supabase
-src/pages/3_Dividends.py      # Mobile-optimized charts
-src/pages/4_Add_Transaction.py # Transaction log with delete
-src/pages/5_Import.py         # DELETED
+src/app.py                    # Renamed to Home, added logos, render_holding_row with logos
+src/utils/styles.py           # Dropdown text size fixes (14px)
 ```
 
-## Current Session Commits
-1. `d227d2c` fix: Add Streamlit secrets fallback for Supabase credentials
-2. `da799f3` fix: Hide sidebar navigation on login page
-3. `ea8c0a7` chore: Remove Import page from app
-4. `0758884` feat: Add transaction history log with delete + fix st.secrets
-5. `b503289` fix: Mobile-optimized chart layouts (Phase 4)
-6. `9e6ec16` fix: Compact period selector buttons on mobile (Phase 5)
-7. `feea81e` fix: Improve data row display on mobile (Phase 6)
-8. `d1dc358` feat: Connect Performance page to real Supabase data (Phase 7)
-9. `13d3e1f` docs: Mark all phases as completed in nextSteps.md
+## Current Session Commits (January 13, 2026)
+1. `334c0ab` fix: Date calculation bug causing 'day out of range' error
+2. `e55b016` feat: Rename App to Home, add logos to Dashboard, fix dropdown sizes
 
 ## Next Actions
-1. **Push to GitHub** (9 commits pending)
-2. **Test on iPhone** (verify all mobile fixes)
+1. **Push to GitHub** (2 commits pending)
+2. **Test on iPhone** (verify all mobile fixes + new changes)
 3. Gather feedback on mobile UX
 
 ## Key URLs
