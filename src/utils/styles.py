@@ -380,6 +380,33 @@ def get_base_styles():
             color: var(--text-primary) !important;
             font-family: 'Plus Jakarta Sans', sans-serif !important;
             padding: 12px 16px !important;
+            font-size: 14px !important;
+        }
+
+        /* Selectbox text size fix */
+        .stSelectbox [data-baseweb="select"] {
+            font-size: 14px !important;
+        }
+
+        .stSelectbox [data-baseweb="select"] > div {
+            font-size: 14px !important;
+            padding: 8px 12px !important;
+        }
+
+        .stSelectbox [data-baseweb="select"] span {
+            font-size: 14px !important;
+        }
+
+        /* Dropdown menu items */
+        div[data-baseweb="popover"] li,
+        div[data-baseweb="menu"] li {
+            font-size: 14px !important;
+            padding: 10px 16px !important;
+        }
+
+        div[data-baseweb="popover"] li span,
+        div[data-baseweb="menu"] li span {
+            font-size: 14px !important;
         }
 
         .stTextInput > div > div > input:focus,
@@ -816,6 +843,17 @@ def get_base_styles():
             .stNumberInput > div > div > input {
                 padding: 10px 12px !important;
                 font-size: 16px !important; /* Prevents zoom on iOS */
+            }
+
+            /* Mobile selectbox dropdown styling */
+            .stSelectbox [data-baseweb="select"] > div {
+                padding: 8px 10px !important;
+            }
+
+            div[data-baseweb="popover"] li,
+            div[data-baseweb="menu"] li {
+                font-size: 14px !important;
+                padding: 12px 14px !important;
             }
         }
 

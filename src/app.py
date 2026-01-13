@@ -13,9 +13,32 @@ from utils import supabase_client as db
 from utils.auth import check_password, logout
 from utils.styles import apply_styles, get_chart_layout, section_label, page_header, CHART_COLORS
 
+
+def get_logo_url(ticker: str, asset_type: str) -> str:
+    """Get logo URL for a ticker. Returns URL for stocks/ETFs/crypto."""
+    ticker_lower = ticker.lower()
+
+    # Crypto logos from CoinGecko CDN (common coins)
+    crypto_ids = {
+        'btc': 'bitcoin', 'eth': 'ethereum', 'sol': 'solana', 'ada': 'cardano',
+        'dot': 'polkadot', 'link': 'chainlink', 'avax': 'avalanche-2', 'matic': 'matic-network',
+        'atom': 'cosmos', 'uni': 'uniswap', 'aave': 'aave', 'ltc': 'litecoin',
+        'xrp': 'ripple', 'doge': 'dogecoin', 'shib': 'shiba-inu', 'bnb': 'binancecoin',
+        'ewt': 'energy-web-token', 'near': 'near', 'algo': 'algorand', 'xlm': 'stellar',
+        'vet': 'vechain', 'fil': 'filecoin', 'theta': 'theta-token', 'ftm': 'fantom',
+        'sand': 'the-sandbox', 'mana': 'decentraland', 'axs': 'axie-infinity',
+    }
+
+    if asset_type == 'CRYPTO' and ticker_lower in crypto_ids:
+        coin_id = crypto_ids[ticker_lower]
+        return f"https://assets.coingecko.com/coins/images/1/small/{coin_id}.png"
+
+    # For stocks and ETFs, use Financial Modeling Prep
+    return f"https://financialmodelingprep.com/image-stock/{ticker.upper()}.png"
+
 # Page config
 st.set_page_config(
-    page_title="Daruma",
+    page_title="Home - Daruma",
     page_icon="🎯",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -198,18 +221,46 @@ def create_movers_chart(holdings: list, top_n: int = 5, show_gainers: bool = Tru
 
 
 def render_holding_row(h: dict):
-    """Render a single holding row with mobile-friendly layout."""
+    """Render a single holding row with mobile-friendly layout and logo."""
     is_positive = h['pnl_pct'] >= 0
     pnl_class = "gain" if is_positive else "loss"
     sign = "+" if is_positive else ""
     initials = h['ticker'][:2].upper()
+    logo_url = get_logo_url(h['ticker'], h['type'])
 
-    # Mobile-friendly stacked layout
+    # Mobile-friendly stacked layout with logo
     st.markdown(f"""
     <div class="data-row-mobile">
         <div class="row-header">
             <div class="row-left">
-                <div class="ticker-badge">{initials}</div>
+                <div style="
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 10px;
+                    background: var(--bg-card);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-right: 10px;
+                    overflow: hidden;
+                    flex-shrink: 0;
+                ">
+                    <img src="{logo_url}"
+                         alt="{h['ticker']}"
+                         style="width: 28px; height: 28px; object-fit: contain;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <span style="
+                        display: none;
+                        width: 100%;
+                        height: 100%;
+                        align-items: center;
+                        justify-content: center;
+                        background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+                        color: white;
+                        font-size: 12px;
+                        font-weight: 600;
+                    ">{initials}</span>
+                </div>
                 <div>
                     <div class="ticker-name">{h['ticker']}</div>
                     <div class="ticker-details">{h['shares']:.2f} shares</div>
