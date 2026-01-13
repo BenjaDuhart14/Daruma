@@ -15,6 +15,25 @@ TICKER_MAPPING = {
     'DOT': 'DOT-USD',
     'MATIC': 'MATIC-USD',
     'LINK': 'LINK-USD',
+    'EWT': 'EWT-USD',  # Energy Web Token
+    'AVAIL': 'AVAIL-USD',  # Avail
+    'CAKE': 'CAKE-USD',  # PancakeSwap
+    'ATOM': 'ATOM-USD',
+    'UNI': 'UNI-USD',
+    'AAVE': 'AAVE-USD',
+    'LTC': 'LTC-USD',
+    'BNB': 'BNB-USD',
+    'NEAR': 'NEAR-USD',
+    'ALGO': 'ALGO-USD',
+    'XLM': 'XLM-USD',
+    'VET': 'VET-USD',
+    'FIL': 'FIL-USD',
+    'THETA': 'THETA-USD',
+    'FTM': 'FTM-USD',
+    'SAND': 'SAND-USD',
+    'MANA': 'MANA-USD',
+    'AXS': 'AXS-USD',
+    'SHIB': 'SHIB-USD',
     # Chilean stocks - add .SN suffix
     'SQM-B': 'SQM-B.SN',
     'BCI': 'BCI.SN',
