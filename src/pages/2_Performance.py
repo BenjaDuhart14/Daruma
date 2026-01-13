@@ -14,7 +14,7 @@ from utils.styles import apply_styles, section_label, page_header, get_chart_lay
 
 st.set_page_config(
     page_title="Performance - Daruma",
-    page_icon="🎯",
+    page_icon="src/favicon.svg",
     layout="wide",
     initial_sidebar_state="collapsed"
 )

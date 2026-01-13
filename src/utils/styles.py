@@ -1105,42 +1105,16 @@ def get_base_styles():
             margin-bottom: 8px;
         }
 
-        /* ==================== HIDE "app" FROM SIDEBAR NAV ==================== */
-        /* Hide the first navigation item (app) in the sidebar */
-        [data-testid="stSidebarNav"] > ul > li:first-child {
-            display: none !important;
+        /* ==================== RENAME "app" TO "Home" IN SIDEBAR NAV ==================== */
+        /* Hide the original "app" text and replace with "Home" */
+        [data-testid="stSidebarNav"] > ul > li:first-child a span {
+            font-size: 0 !important;
         }
-
-        /* Alternative: target by link text containing "app" */
-        [data-testid="stSidebarNav"] a[href="/"] span:first-child {
-            visibility: hidden;
-        }
-        [data-testid="stSidebarNav"] a[href="/"]:after {
+        [data-testid="stSidebarNav"] > ul > li:first-child a span::after {
             content: "Home";
-            visibility: visible;
-            position: absolute;
-            left: 40px;
+            font-size: 14px !important;
         }
     </style>
-    
-    <script>
-        // Replace favicon with Daruma SVG
-        (function() {
-            const svgFavicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><ellipse cx="52" cy="57" rx="40" ry="42" fill="rgba(0,0,0,0.3)"/><ellipse cx="50" cy="55" rx="40" ry="42" fill="#ef4444"/><ellipse cx="50" cy="48" rx="28" ry="24" fill="#fef3c7"/><circle cx="38" cy="45" r="10" fill="#1f2937"/><circle cx="35" cy="42" r="3" fill="white" opacity="0.8"/><circle cx="62" cy="45" r="10" fill="none" stroke="#1f2937" stroke-width="2.5"/><path d="M26 34 Q38 30 48 35" stroke="#1f2937" stroke-width="2.5" fill="none"/><path d="M52 35 Q62 30 74 34" stroke="#1f2937" stroke-width="2.5" fill="none"/><path d="M42 62 Q50 58 58 62" stroke="#1f2937" stroke-width="2" fill="none"/></svg>`;
-            const encodedSvg = encodeURIComponent(svgFavicon);
-            const dataUrl = `data:image/svg+xml,${encodedSvg}`;
-            
-            // Find and replace existing favicon
-            let link = document.querySelector("link[rel*='icon']");
-            if (!link) {
-                link = document.createElement('link');
-                link.rel = 'icon';
-                document.head.appendChild(link);
-            }
-            link.type = 'image/svg+xml';
-            link.href = dataUrl;
-        })();
-    </script>
     """
 
 

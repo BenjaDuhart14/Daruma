@@ -36,10 +36,10 @@ def get_logo_url(ticker: str, asset_type: str) -> str:
     # For stocks and ETFs, use Financial Modeling Prep
     return f"https://financialmodelingprep.com/image-stock/{ticker.upper()}.png"
 
-# Page config
+# Page config - use Daruma favicon
 st.set_page_config(
     page_title="Home - Daruma",
-    page_icon="🎯",
+    page_icon="src/favicon.svg",
     layout="wide",
     initial_sidebar_state="collapsed"
 )

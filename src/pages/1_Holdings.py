@@ -11,7 +11,7 @@ from utils.styles import apply_styles, section_label, page_header, get_daruma_lo
 
 st.set_page_config(
     page_title="Holdings - Daruma",
-    page_icon="🎯",  # Note: Streamlit requires emoji/string for page_icon
+    page_icon="src/favicon.svg",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
