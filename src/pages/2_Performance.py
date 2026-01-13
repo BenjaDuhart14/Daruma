@@ -10,7 +10,7 @@ from datetime import datetime, date
 import numpy as np
 from utils import supabase_client as db
 from utils.auth import check_password
-from utils.styles import apply_styles, section_label, page_header, get_chart_layout, CHART_COLORS, get_daruma_logo
+from utils.styles import apply_styles, section_label, page_header, get_chart_layout, CHART_COLORS, get_daruma_logo, render_bottom_nav
 
 st.set_page_config(
     page_title="Performance - Daruma",
@@ -313,6 +313,9 @@ def main():
             st.dataframe(df, use_container_width=True, hide_index=True)
     else:
         st.info("No holdings data available. Add transactions to see performance by asset.")
+    
+    # Bottom Navigation Bar
+    render_bottom_nav(active_page="performance")
 
 
 if __name__ == "__main__":

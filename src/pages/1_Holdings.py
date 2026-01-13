@@ -7,7 +7,7 @@ import streamlit as st
 import pandas as pd
 from utils import supabase_client as db
 from utils.auth import check_password
-from utils.styles import apply_styles, section_label, page_header, get_daruma_logo
+from utils.styles import apply_styles, section_label, page_header, get_daruma_logo, render_bottom_nav
 
 st.set_page_config(
     page_title="Holdings - Daruma",
@@ -260,6 +260,9 @@ def main():
     # Holdings list
     for h in holdings:
         render_holding_card(h)
+    
+    # Bottom Navigation Bar
+    render_bottom_nav(active_page="holdings")
 
 
 if __name__ == "__main__":

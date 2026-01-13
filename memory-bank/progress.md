@@ -36,18 +36,20 @@
 - [x] Sidebar "app" renamed to "Home" via CSS
 
 ## What's In Progress
-- **Phase 2: Chart Enhancements**
-  - Dynamic value display above chart
-  - Portfolio allocation donut chart
-  - Candlestick chart option
+- **Future Enhancements** (Next session)
 
-## What's Left to Build
+## Completed: Phase 3 Native Feel ✅
+- [x] Horizontal scroll period selector (single row pills)
+- [x] Bottom navigation bar on all pages
+- [x] Animated value counters with staggered delays
+- [x] FAB repositioned above bottom nav
 
-### Phase 2: Chart Enhancements
-- [ ] Dynamic value display above chart (updates on hover/touch)
-- [ ] Portfolio allocation donut chart on Home page
-- [ ] Candlestick chart option for Performance page
-- [ ] Improved High/Low markers with better styling
+## Completed: Phase 2 Chart Enhancements ✅
+- [x] Dynamic value display above chart with animations
+- [x] Portfolio allocation donut chart on Home page
+- [x] Enhanced hover tooltips with styled labels
+
+## What's Left to Build (Future)
 
 ### Phase 3: Native Feel
 - [ ] Horizontal scroll period selector (single row)

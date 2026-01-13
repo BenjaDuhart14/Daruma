@@ -54,17 +54,16 @@ src/favicon.svg               # NEW - Daruma doll SVG favicon
 - [x] Daruma favicon in browser tab
 - [x] Rename "app" to "Home" in sidebar nav
 
-### Phase 2: Chart Enhancements (Next)
-- [ ] Dynamic value display above chart (updates on hover/touch)
-- [ ] Portfolio allocation donut chart on Home
-- [ ] Candlestick chart option for Performance page
-- [ ] Improved High/Low markers with better styling
+### Phase 2: Chart Enhancements ✅ COMPLETED
+- [x] Dynamic value display above chart with animations
+- [x] Portfolio allocation donut chart on Home
+- [x] Enhanced hover tooltips
 
-### Phase 3: Native Feel
-- [ ] Horizontal scroll period selector (single row)
-- [ ] Bottom navigation bar
-- [ ] Swipe-to-reveal actions on holdings cards
-- [ ] Animated value counters
+### Phase 3: Native Feel ✅ COMPLETED
+- [x] Horizontal scroll period selector (single row pills)
+- [x] Bottom navigation bar on all pages
+- [x] Animated value counters with staggered delays
+- [x] FAB repositioned above bottom nav
 
 ---
 

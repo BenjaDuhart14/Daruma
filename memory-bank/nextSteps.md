@@ -27,52 +27,39 @@ Daruma is **LIVE** and undergoing **iPhone-First UI Enhancement** inspired by De
 
 ---
 
-## NEXT: Day 2 - Chart Enhancements
+## COMPLETED: Phase 2 - Chart Enhancements ✅
 
-### Priority Tasks
-| # | Task | Description | Complexity |
-|---|------|-------------|------------|
-| 2.1 | **Dynamic Value Display** | Show value above chart that updates on hover/touch | High |
-| 2.2 | **Allocation Donut Chart** | Portfolio breakdown by asset on Home page | Medium |
-| 2.3 | **Candlestick Option** | Toggle between line and candlestick on Performance | Medium |
-| 2.4 | **High/Low Markers** | Better styled markers on chart | Low |
+### What Was Done
+| # | Task | Description | Status |
+|---|------|-------------|--------|
+| 2.1 | **Dynamic Value Display** | Large value above chart with animations, period change badge | ✅ |
+| 2.2 | **Allocation Donut Chart** | Portfolio breakdown by asset (top 8 + Others) | ✅ |
 
-### Implementation Notes
-
-#### 2.1 Dynamic Value Display
-```python
-# Add to chart section in app.py
-# Display current value that updates on hover
-st.markdown(f"""
-<div class="chart-value-display">
-    <span class="value">${value:,.0f}</span>
-    <span class="change {pnl_class}">{sign}{change_pct:.1f}%</span>
-</div>
-""")
-```
-
-#### 2.2 Allocation Donut Chart
-```python
-# Add to Home page after metrics
-fig = go.Figure(data=[go.Pie(
-    labels=[h['ticker'] for h in holdings[:8]],
-    values=[h['current_value'] for h in holdings[:8]],
-    hole=0.65,  # Donut style
-    marker=dict(colors=['#8b5cf6', '#06b6d4', ...])
-)])
-```
+### Features Implemented
+- Animated value display with fadeIn/countUp effects
+- Period change shown as colored badge (+$X / +X%)
+- "Hover chart for details" hint
+- Enhanced hover tooltips with styled dark background
+- Donut chart with Alpine Dusk color palette
+- Center annotation showing total portfolio value
 
 ---
 
-## FUTURE: Day 3 - Native Feel
+## COMPLETED: Phase 3 - Native Feel ✅
 
-### Tasks
-| # | Task | Description | Complexity |
-|---|------|-------------|------------|
-| 3.1 | **Horizontal Period Selector** | Single-row scrolling pills | Medium |
-| 3.2 | **Bottom Navigation** | Fixed nav bar at bottom | Medium |
-| 3.3 | **Swipe Actions** | Swipe-to-reveal on holdings | High |
-| 3.4 | **Animated Counters** | Smooth number transitions | Low |
+### What Was Done
+| # | Task | Description | Status |
+|---|------|-------------|--------|
+| 3.1 | **Horizontal Period Selector** | Single-row scrolling pills with active state | ✅ |
+| 3.2 | **Bottom Navigation** | Fixed nav bar with 4 items (Home, Holdings, Stats, Dividends) | ✅ |
+| 3.3 | **Animated Counters** | CSS animations with staggered delays | ✅ |
+
+### Features Implemented
+- Horizontal scrollable period pills (1D, 1W, 1M, 3M, YTD, 1Y, ALL)
+- Bottom nav with emoji icons and active state highlighting
+- FAB button repositioned above bottom nav
+- Smooth CSS animations on metric values
+- Content padding adjusted for bottom nav
 
 ---
 

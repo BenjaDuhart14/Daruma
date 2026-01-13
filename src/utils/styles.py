@@ -1028,7 +1028,7 @@ def get_base_styles():
         /* ==================== FLOATING ACTION BUTTON (FAB) ==================== */
         .fab-add {
             position: fixed;
-            bottom: 24px;
+            bottom: 90px; /* Above bottom nav (70px nav + 20px margin) */
             right: 20px;
             width: 56px;
             height: 56px;
@@ -1067,7 +1067,7 @@ def get_base_styles():
         /* FAB responsive adjustments */
         @media (max-width: 480px) {
             .fab-add {
-                bottom: 20px;
+                bottom: 85px; /* Above bottom nav on mobile */
                 right: 16px;
                 width: 52px;
                 height: 52px;
@@ -1083,7 +1083,7 @@ def get_base_styles():
         /* Safe area for iPhone notch */
         @supports (padding-bottom: env(safe-area-inset-bottom)) {
             .fab-add {
-                bottom: calc(24px + env(safe-area-inset-bottom));
+                bottom: calc(90px + env(safe-area-inset-bottom));
             }
         }
 
@@ -1108,26 +1108,40 @@ def get_base_styles():
         /* ==================== CHART VALUE DISPLAY ==================== */
         .chart-value-header {
             text-align: center;
-            padding: 16px 0 8px;
+            padding: 20px 0 12px;
             margin-bottom: 8px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0.5; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes countUp {
+            from { opacity: 0.7; }
+            to { opacity: 1; }
         }
 
         .chart-main-value {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 42px;
+            font-size: 48px;
             font-weight: 700;
             color: var(--text-primary);
             line-height: 1.1;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            animation: countUp 0.4s ease-out;
+            text-shadow: 0 2px 20px rgba(139, 92, 246, 0.15);
         }
 
         .chart-value-change {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 600;
+            animation: fadeIn 0.5s ease-out;
         }
 
         .chart-value-change.gain {
@@ -1139,34 +1153,45 @@ def get_base_styles():
         }
 
         .chart-value-change .amount {
-            padding: 4px 10px;
-            border-radius: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
         }
 
         .chart-value-change.gain .amount {
             background: var(--gain-bg);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
         }
 
         .chart-value-change.loss .amount {
             background: var(--loss-bg);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
         }
 
         .chart-period-label {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-muted);
-            margin-top: 6px;
+            margin-top: 8px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            font-weight: 500;
+        }
+
+        .chart-hint {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            opacity: 0.6;
         }
 
         /* Responsive chart value display */
         @media (max-width: 480px) {
             .chart-main-value {
-                font-size: 32px;
+                font-size: 38px;
             }
 
             .chart-value-change {
-                font-size: 14px;
+                font-size: 15px;
                 flex-wrap: wrap;
                 justify-content: center;
             }
@@ -1174,13 +1199,154 @@ def get_base_styles():
 
         @media (max-width: 375px) {
             .chart-main-value {
-                font-size: 28px;
+                font-size: 32px;
             }
 
             .chart-value-change {
-                font-size: 12px;
+                font-size: 13px;
             }
         }
+
+        /* ==================== HORIZONTAL PERIOD SELECTOR ==================== */
+        .period-selector-container {
+            width: 100%;
+            overflow: hidden;
+            margin: 8px 0 16px;
+        }
+
+        .period-selector-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 4px 2px;
+        }
+
+        .period-selector-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .period-pill {
+            flex-shrink: 0;
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .period-pill:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+        }
+
+        .period-pill.active {
+            background: linear-gradient(135deg, var(--accent-purple), #6366f1);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Hide the actual Streamlit buttons when using custom pills */
+        .period-selector-container + div [data-testid="column"] {
+            display: none !important;
+        }
+
+        /* ==================== BOTTOM NAVIGATION BAR ==================== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: linear-gradient(180deg, rgba(10, 10, 18, 0.95) 0%, rgba(10, 10, 18, 0.98) 100%);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 16px;
+            padding-bottom: env(safe-area-inset-bottom, 8px);
+            z-index: 9999;
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-radius: 12px;
+        }
+
+        .bottom-nav-item:hover {
+            color: var(--text-secondary);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .bottom-nav-item.active {
+            color: var(--accent-purple);
+        }
+
+        .bottom-nav-item .nav-icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .bottom-nav-item .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        /* Add padding to main content to account for bottom nav */
+        .main .block-container {
+            padding-bottom: 90px !important;
+        }
+
+        /* ==================== ANIMATED VALUE COUNTERS ==================== */
+        @keyframes countUpValue {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .metric-value-large {
+            animation: countUpValue 0.5s ease-out forwards;
+        }
+
+        .metric-value {
+            animation: countUpValue 0.4s ease-out forwards;
+            animation-delay: 0.1s;
+        }
+
+        .metric-change {
+            animation: countUpValue 0.4s ease-out forwards;
+            animation-delay: 0.2s;
+        }
+
+        /* Stagger animations for metric cards */
+        .metric-card:nth-child(1) { animation-delay: 0s; }
+        .metric-card:nth-child(2) { animation-delay: 0.1s; }
+        .metric-card:nth-child(3) { animation-delay: 0.2s; }
+        .metric-card:nth-child(4) { animation-delay: 0.3s; }
 
         /* ==================== RENAME "app" TO "Home" IN SIDEBAR NAV ==================== */
         /* Replace "app" text with "Home" using text-indent and background */
@@ -1309,3 +1475,30 @@ def render_fab_button():
         </svg>
     </a>
     ''', unsafe_allow_html=True)
+
+
+def render_bottom_nav(active_page: str = "home"):
+    """Render the bottom navigation bar for mobile-native feel.
+    
+    Args:
+        active_page: One of "home", "holdings", "performance", "dividends"
+    """
+    nav_items = [
+        {"id": "home", "label": "Home", "icon": "🏠", "href": "/"},
+        {"id": "holdings", "label": "Holdings", "icon": "💼", "href": "/Holdings"},
+        {"id": "performance", "label": "Stats", "icon": "📈", "href": "/Performance"},
+        {"id": "dividends", "label": "Dividends", "icon": "💰", "href": "/Dividends"},
+    ]
+    
+    nav_html = '<nav class="bottom-nav">'
+    for item in nav_items:
+        active_class = "active" if item["id"] == active_page else ""
+        nav_html += f'''
+        <a href="{item["href"]}" target="_self" class="bottom-nav-item {active_class}">
+            <span class="nav-icon">{item["icon"]}</span>
+            <span class="nav-label">{item["label"]}</span>
+        </a>
+        '''
+    nav_html += '</nav>'
+    
+    st.markdown(nav_html, unsafe_allow_html=True)

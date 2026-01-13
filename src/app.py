@@ -11,7 +11,7 @@ import numpy as np
 
 from utils import supabase_client as db
 from utils.auth import check_password, logout
-from utils.styles import apply_styles, get_chart_layout, section_label, page_header, CHART_COLORS, get_daruma_logo, render_fab_button
+from utils.styles import apply_styles, get_chart_layout, section_label, page_header, CHART_COLORS, get_daruma_logo, render_fab_button, render_bottom_nav
 
 
 def get_logo_url(ticker: str, asset_type: str) -> str:
@@ -182,8 +182,13 @@ def create_portfolio_chart(period: str, current_value: float = 0, total_cost: fl
         line=dict(color=line_color, width=2.5),
         fill='tozeroy',
         fillcolor=fill_color,
-        hovertemplate='<b>%{x|%b %d, %Y}</b><br>Portfolio: <b>$%{y:,.2f}</b><extra></extra>',
-        name='Portfolio'
+        hovertemplate='<b style="font-size:14px">%{x|%b %d, %Y}</b><br><span style="font-size:18px;font-weight:bold">$%{y:,.0f}</span><extra></extra>',
+        name='Portfolio',
+        hoverlabel=dict(
+            bgcolor='rgba(20, 20, 35, 0.95)',
+            bordercolor=line_color,
+            font=dict(family='JetBrains Mono', size=13, color='#f8fafc')
+        )
     ))
     
     # Add start point marker
@@ -514,19 +519,24 @@ def main():
 
     periods = ['1D', '1W', '1M', '3M', 'YTD', '1Y', 'ALL']
 
-    # Row 1: First 4 periods
-    cols1 = st.columns(4)
-    for i, period in enumerate(periods[:4]):
-        with cols1[i]:
-            btn_type = "primary" if st.session_state.selected_period == period else "secondary"
-            if st.button(period, key=f"period_{period}", type=btn_type, use_container_width=True):
-                st.session_state.selected_period = period
-                st.rerun()
-
-    # Row 2: Last 3 periods
-    cols2 = st.columns(4)
-    for i, period in enumerate(periods[4:]):
-        with cols2[i]:
+    # Horizontal scrolling period selector (single row pills)
+    period_buttons_html = ""
+    for period in periods:
+        active_class = "active" if st.session_state.selected_period == period else ""
+        period_buttons_html += f'<button class="period-pill {active_class}" data-period="{period}">{period}</button>'
+    
+    st.markdown(f"""
+    <div class="period-selector-container">
+        <div class="period-selector-scroll">
+            {period_buttons_html}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Streamlit buttons (hidden, but functional) - single row of 7
+    cols = st.columns(7)
+    for i, period in enumerate(periods):
+        with cols[i]:
             btn_type = "primary" if st.session_state.selected_period == period else "secondary"
             if st.button(period, key=f"period_{period}", type=btn_type, use_container_width=True):
                 st.session_state.selected_period = period
@@ -554,10 +564,11 @@ def main():
     <div class="chart-value-header">
         <div class="chart-main-value">${chart_data['end_value']:,.0f}</div>
         <div class="chart-value-change {change_class}">
-            <span class="amount">{change_sign}${chart_data['period_change']:,.0f}</span>
+            <span class="amount">{change_sign}${abs(chart_data['period_change']):,.0f}</span>
             <span>({change_sign}{chart_data['period_change_pct']:.1f}%)</span>
         </div>
         <div class="chart-period-label">{current_period}</div>
+        <div class="chart-hint">Hover chart for details</div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -628,6 +639,9 @@ def main():
 
     # Floating Action Button for quick transaction adding
     render_fab_button()
+    
+    # Bottom Navigation Bar
+    render_bottom_nav(active_page="home")
 
 
 if __name__ == "__main__":
