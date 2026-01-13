@@ -519,21 +519,7 @@ def main():
 
     periods = ['1D', '1W', '1M', '3M', 'YTD', '1Y', 'ALL']
 
-    # Horizontal scrolling period selector (single row pills)
-    period_buttons_html = ""
-    for period in periods:
-        active_class = "active" if st.session_state.selected_period == period else ""
-        period_buttons_html += f'<button class="period-pill {active_class}" data-period="{period}">{period}</button>'
-    
-    st.markdown(f"""
-    <div class="period-selector-container">
-        <div class="period-selector-scroll">
-            {period_buttons_html}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Streamlit buttons (hidden, but functional) - single row of 7
+    # Period selector using Streamlit columns with custom styling
     cols = st.columns(7)
     for i, period in enumerate(periods):
         with cols[i]:

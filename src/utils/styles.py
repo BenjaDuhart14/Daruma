@@ -1028,7 +1028,7 @@ def get_base_styles():
         /* ==================== FLOATING ACTION BUTTON (FAB) ==================== */
         .fab-add {
             position: fixed;
-            bottom: 90px; /* Above bottom nav (70px nav + 20px margin) */
+            bottom: 24px;
             right: 20px;
             width: 56px;
             height: 56px;
@@ -1038,11 +1038,16 @@ def get_base_styles():
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: white !important;
             text-decoration: none;
             z-index: 9998;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             animation: fab-pulse 2s ease-in-out infinite;
+        }
+        
+        .fab-add svg {
+            stroke: white !important;
+            color: white !important;
         }
 
         .fab-add:hover {
@@ -1067,7 +1072,7 @@ def get_base_styles():
         /* FAB responsive adjustments */
         @media (max-width: 480px) {
             .fab-add {
-                bottom: 85px; /* Above bottom nav on mobile */
+                bottom: 20px;
                 right: 16px;
                 width: 52px;
                 height: 52px;
@@ -1077,13 +1082,14 @@ def get_base_styles():
             .fab-add svg {
                 width: 24px;
                 height: 24px;
+                stroke: white !important;
             }
         }
 
         /* Safe area for iPhone notch */
         @supports (padding-bottom: env(safe-area-inset-bottom)) {
             .fab-add {
-                bottom: calc(90px + env(safe-area-inset-bottom));
+                bottom: calc(24px + env(safe-area-inset-bottom));
             }
         }
 
@@ -1207,114 +1213,9 @@ def get_base_styles():
             }
         }
 
-        /* ==================== HORIZONTAL PERIOD SELECTOR ==================== */
-        .period-selector-container {
-            width: 100%;
-            overflow: hidden;
-            margin: 8px 0 16px;
-        }
+        /* Period selector uses native Streamlit buttons with primary/secondary styling */
 
-        .period-selector-scroll {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            padding: 4px 2px;
-        }
-
-        .period-selector-scroll::-webkit-scrollbar {
-            display: none;
-        }
-
-        .period-pill {
-            flex-shrink: 0;
-            padding: 10px 20px;
-            border-radius: 20px;
-            border: 1px solid var(--border-subtle);
-            background: var(--bg-card);
-            color: var(--text-secondary);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-
-        .period-pill:hover {
-            border-color: var(--accent-purple);
-            color: var(--text-primary);
-        }
-
-        .period-pill.active {
-            background: linear-gradient(135deg, var(--accent-purple), #6366f1);
-            border-color: transparent;
-            color: white;
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
-        }
-
-        /* Hide the actual Streamlit buttons when using custom pills */
-        .period-selector-container + div [data-testid="column"] {
-            display: none !important;
-        }
-
-        /* ==================== BOTTOM NAVIGATION BAR ==================== */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: linear-gradient(180deg, rgba(10, 10, 18, 0.95) 0%, rgba(10, 10, 18, 0.98) 100%);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid var(--border-subtle);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 0 16px;
-            padding-bottom: env(safe-area-inset-bottom, 8px);
-            z-index: 9999;
-        }
-
-        .bottom-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 8px 16px;
-            color: var(--text-muted);
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border-radius: 12px;
-        }
-
-        .bottom-nav-item:hover {
-            color: var(--text-secondary);
-            background: rgba(139, 92, 246, 0.1);
-        }
-
-        .bottom-nav-item.active {
-            color: var(--accent-purple);
-        }
-
-        .bottom-nav-item .nav-icon {
-            font-size: 22px;
-            line-height: 1;
-        }
-
-        .bottom-nav-item .nav-label {
-            font-size: 10px;
-            font-weight: 500;
-            letter-spacing: 0.3px;
-        }
-
-        /* Add padding to main content to account for bottom nav */
-        .main .block-container {
-            padding-bottom: 90px !important;
-        }
+        /* Bottom nav disabled - using sidebar for navigation */
 
         /* ==================== ANIMATED VALUE COUNTERS ==================== */
         @keyframes countUpValue {
@@ -1480,25 +1381,11 @@ def render_fab_button():
 def render_bottom_nav(active_page: str = "home"):
     """Render the bottom navigation bar for mobile-native feel.
     
+    NOTE: Temporarily disabled due to HTML rendering issues in Streamlit Cloud.
+    The sidebar already provides navigation.
+    
     Args:
         active_page: One of "home", "holdings", "performance", "dividends"
     """
-    nav_items = [
-        {"id": "home", "label": "Home", "icon": "🏠", "href": "/"},
-        {"id": "holdings", "label": "Holdings", "icon": "💼", "href": "/Holdings"},
-        {"id": "performance", "label": "Stats", "icon": "📈", "href": "/Performance"},
-        {"id": "dividends", "label": "Dividends", "icon": "💰", "href": "/Dividends"},
-    ]
-    
-    nav_html = '<nav class="bottom-nav">'
-    for item in nav_items:
-        active_class = "active" if item["id"] == active_page else ""
-        nav_html += f'''
-        <a href="{item["href"]}" target="_self" class="bottom-nav-item {active_class}">
-            <span class="nav-icon">{item["icon"]}</span>
-            <span class="nav-label">{item["label"]}</span>
-        </a>
-        '''
-    nav_html += '</nav>'
-    
-    st.markdown(nav_html, unsafe_allow_html=True)
+    # Bottom nav disabled - sidebar provides navigation
+    pass
