@@ -1,125 +1,85 @@
 # Active Context: Daruma
 
 ## Current Focus
-**App is LIVE and fully functional!** All data showing correctly on Streamlit Cloud. Real portfolio value: ~$82k (after EWT price correction). Ready for daily use.
+**iPhone-First UI Enhancement Project** - Implementing Delta app-inspired improvements for better mobile UX.
 
 ## Recent Changes (This Session - January 13, 2026)
 
-### 1. App Deployment Verified Working
-- Confirmed real data displaying on Streamlit Cloud
-- Total Value: ~$82,000 (corrected after EWT fix)
-- Total P&L: +$22,000 (+37%)
-- 36 assets tracked
+### Day 1 Implementation: Core Identity & Quick Add ✅
 
-### 2. Fixed Crypto Ticker Mappings
-**Problem**: EWT (Energy Web Token) was showing $66.62 instead of ~$0.81
-- yfinance `EWT` = iShares Taiwan ETF (wrong!)
-- yfinance `EWT-USD` = Energy Web Token (correct)
+#### 1. Daruma Logo Implementation
+- Created custom SVG Daruma doll logo (one eye painted, one empty)
+- Represents the investment journey: "first $100K is the hardest"
+- Logo displays in page headers and sidebar
+- Created `src/favicon.svg` for browser tab
 
-**Solution**: Updated `ticker_mapping.py` to include:
-```python
-'EWT': 'EWT-USD',   # Energy Web Token
-'AVAIL': 'AVAIL-USD',  # Avail
-'CAKE': 'CAKE-USD',  # PancakeSwap
-# Plus 17 more common crypto tickers
+#### 2. Page Rename: Dashboard → Home
+- Main page now displays "Home" instead of "Dashboard"
+- CSS renames "app" to "Home" in sidebar navigation
+- Keeps link clickable for navigation back to home
+
+#### 3. Floating Action Button (FAB)
+- Purple-to-cyan gradient "+" button
+- Fixed position bottom-right
+- Links to Add Transaction page
+- Pulse animation for visibility
+- iPhone safe area support
+
+#### 4. Favicon Update
+- Browser tab now shows Daruma doll SVG
+- Replaces previous 🎯 bullseye emoji
+- Applied to all pages for consistency
+
+---
+
+## Files Modified This Session
+```
+src/app.py                    # Home rename, Daruma logo, FAB button
+src/utils/styles.py           # Daruma SVG, FAB CSS, sidebar rename CSS
+src/pages/1_Holdings.py       # Daruma logo in header, favicon
+src/pages/2_Performance.py    # Daruma logo in header, favicon
+src/pages/3_Dividends.py      # Daruma logo in header, favicon
+src/pages/4_Add_Transaction.py # Daruma logo in header, favicon
+src/favicon.svg               # NEW - Daruma doll SVG favicon
 ```
 
-### 3. Added Refresh Data Button
-- New "🔄 Refresh Data" button in sidebar
-- Clears `@st.cache_data` cache and forces reload
-- Useful for seeing updated prices immediately
-
-### 4. Removed Debug Page
-- Deleted `src/pages/9_Debug.py` after confirming app works
-- Was only needed for troubleshooting Supabase connection
-
-### 5. UI Improvements
-- Company logos on Dashboard (same as Holdings page)
-- Fixed dropdown text sizes (14px)
-- Page title changed to "Home - Daruma" (browser tab)
-- Note: Sidebar still shows "app" (filename-based, requires Streamlit Cloud config change)
-
 ---
 
-## Previous Changes (January 12, 2026)
+## UI Enhancement Plan
 
-### Supabase Connection Fix
-- `supabase_client.py` now checks both `st.secrets` and `os.getenv()`
-- Supports secrets at root level OR under `[auth]` section
-- Key learning: Use `st.secrets['KEY']` not `st.secrets.get('KEY')`
+### Phase 1: Quick Wins ✅ COMPLETED
+- [x] Daruma SVG logo across all pages
+- [x] Rename "Dashboard" to "Home"
+- [x] FAB (+) button for quick transaction adding
+- [x] Daruma favicon in browser tab
+- [x] Rename "app" to "Home" in sidebar nav
 
-### Other Fixes
-- Hidden sidebar on login page
-- Removed Import page (CLI only)
-- Transaction history with delete
-- Mobile-optimized charts and buttons
-- Performance page with real data
+### Phase 2: Chart Enhancements (Next)
+- [ ] Dynamic value display above chart (updates on hover/touch)
+- [ ] Portfolio allocation donut chart on Home
+- [ ] Candlestick chart option for Performance page
+- [ ] Improved High/Low markers with better styling
 
----
-
-## Completed Steps
-1. [x] Supabase project + schema
-2. [x] Local development
-3. [x] GitHub deployment
-4. [x] Streamlit Cloud deployment
-5. [x] GitHub Actions (price updates every 4 hours)
-6. [x] User authentication
-7. [x] Alpine Dusk theme
-8. [x] Company/crypto logos
-9. [x] Mobile-first responsive design
-10. [x] Delta CSV import (211 transactions)
-11. [x] **Supabase connection on Streamlit Cloud**
-12. [x] **Real data on all pages**
-13. [x] **Crypto ticker mappings fixed**
-14. [x] **App verified working in production**
+### Phase 3: Native Feel
+- [ ] Horizontal scroll period selector (single row)
+- [ ] Bottom navigation bar
+- [ ] Swipe-to-reveal actions on holdings cards
+- [ ] Animated value counters
 
 ---
 
 ## Active Decisions
 
-### Decided
-- Stack: Streamlit + Supabase + GitHub Actions + yfinance
-- All free tiers
-- USD as base currency
-- Single-user auth via Streamlit secrets
-- Alpine Dusk theme, mobile-first
-- Crypto tickers use `-USD` suffix in yfinance
+### Design
+- Daruma logo: One eye painted (goal set), one empty (goal in progress)
+- Alpine Dusk theme: Dark purple/cyan gradient aesthetic
+- FAB button: Quick access to add transactions
+- Mobile-first: All components optimized for iPhone
 
-### Pending
-- Portfolio allocation pie chart
-- Performance vs S&P 500 benchmark
-
----
-
-## Important Patterns
-- **Crypto tickers**: Must add to `ticker_mapping.py` with `-USD` suffix
-- **Streamlit secrets**: Use bracket notation `st.secrets['KEY']`
-- **Cache**: Use "Refresh Data" button or wait 5 min for auto-refresh
-- **Never commit credentials** to public repo
-
----
-
-## Key Files Modified This Session
-```
-src/app.py                    # Added Refresh Data button, logos
-src/utils/ticker_mapping.py   # Added EWT, AVAIL, CAKE + 17 cryptos
-src/utils/styles.py           # Dropdown text size fixes
-src/pages/9_Debug.py          # DELETED (was temporary)
-```
-
-## Session Commits (January 13, 2026)
-1. `334c0ab` fix: Date calculation bug
-2. `e55b016` feat: Rename App to Home, logos, dropdown fixes
-3. `f564ebd` feat: Add Refresh Data button
-4. `31abe7e` chore: Remove debug page
-5. `0fb4377` fix: Add missing crypto ticker mappings
-
----
-
-## Next Actions
-1. **Push to GitHub** (commits pending)
-2. Click "Refresh Data" in app to see corrected values
-3. Monitor GitHub Actions for price updates
+### Technical
+- SVG favicon requires file (not inline) for Streamlit
+- CSS pseudo-elements for sidebar text replacement
+- Keep app.py filename for Streamlit Cloud compatibility
 
 ---
 
@@ -127,4 +87,13 @@ src/pages/9_Debug.py          # DELETED (was temporary)
 - **Live App**: https://daruma14.streamlit.app/
 - **GitHub Repo**: https://github.com/BenjaDuhart14/Daruma
 - **Supabase**: https://pvxetjsadcgaeeqmauzz.supabase.co
-- **GitHub Actions**: https://github.com/BenjaDuhart14/Daruma/actions
+
+---
+
+## Git Commands for This Project
+```bash
+cd ~/investment-tracker
+git add -A
+git commit -m "message"
+git push origin main
+```

@@ -1105,6 +1105,83 @@ def get_base_styles():
             margin-bottom: 8px;
         }
 
+        /* ==================== CHART VALUE DISPLAY ==================== */
+        .chart-value-header {
+            text-align: center;
+            padding: 16px 0 8px;
+            margin-bottom: 8px;
+        }
+
+        .chart-main-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.1;
+            margin-bottom: 8px;
+        }
+
+        .chart-value-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chart-value-change.gain {
+            color: var(--gain);
+        }
+
+        .chart-value-change.loss {
+            color: var(--loss);
+        }
+
+        .chart-value-change .amount {
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .chart-value-change.gain .amount {
+            background: var(--gain-bg);
+        }
+
+        .chart-value-change.loss .amount {
+            background: var(--loss-bg);
+        }
+
+        .chart-period-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Responsive chart value display */
+        @media (max-width: 480px) {
+            .chart-main-value {
+                font-size: 32px;
+            }
+
+            .chart-value-change {
+                font-size: 14px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .chart-main-value {
+                font-size: 28px;
+            }
+
+            .chart-value-change {
+                font-size: 12px;
+            }
+        }
+
         /* ==================== RENAME "app" TO "Home" IN SIDEBAR NAV ==================== */
         /* Replace "app" text with "Home" using text-indent and background */
         [data-testid="stSidebarNav"] > ul > li:first-child a {

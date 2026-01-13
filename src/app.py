@@ -130,7 +130,7 @@ def get_portfolio_history(days: int = 365):
 
 
 def create_portfolio_chart(period: str, current_value: float = 0):
-    """Create portfolio evolution line chart with Alpine Dusk styling."""
+    """Create portfolio evolution line chart with Alpine Dusk styling and crosshairs."""
     days_map = {'1D': 1, '1W': 7, '1M': 30, '3M': 90, 'YTD': 180, '1Y': 365, 'ALL': 730}
     days = days_map.get(period, 30)
 
@@ -150,10 +150,16 @@ def create_portfolio_chart(period: str, current_value: float = 0):
     is_positive = len(values) < 2 or values[-1] >= values[0]
     line_color = CHART_COLORS['gain'] if is_positive else CHART_COLORS['loss']
     fill_color = 'rgba(16, 185, 129, 0.1)' if is_positive else 'rgba(239, 68, 68, 0.1)'
+    
+    # Calculate period change for display
+    start_value = values[0] if len(values) > 0 else 0
+    end_value = values[-1] if len(values) > 0 else 0
+    period_change = end_value - start_value
+    period_change_pct = ((end_value - start_value) / start_value * 100) if start_value > 0 else 0
 
     fig = go.Figure()
 
-    # Gradient area fill
+    # Main line with gradient area fill
     fig.add_trace(go.Scatter(
         x=dates,
         y=values,
@@ -161,19 +167,74 @@ def create_portfolio_chart(period: str, current_value: float = 0):
         line=dict(color=line_color, width=2.5),
         fill='tozeroy',
         fillcolor=fill_color,
-        hovertemplate='<b>$%{y:,.2f}</b><extra></extra>'
+        hovertemplate='<b>%{x|%b %d, %Y}</b><br>Portfolio: <b>$%{y:,.2f}</b><extra></extra>',
+        name='Portfolio'
     ))
+    
+    # Add start point marker
+    if len(values) > 0:
+        fig.add_trace(go.Scatter(
+            x=[dates[0]],
+            y=[values[0]],
+            mode='markers',
+            marker=dict(color='#64748b', size=6, symbol='circle'),
+            hovertemplate='Start: <b>$%{y:,.2f}</b><extra></extra>',
+            name='Start'
+        ))
+    
+    # Add end point marker (current)
+    if len(values) > 0:
+        fig.add_trace(go.Scatter(
+            x=[dates[-1]],
+            y=[values[-1]],
+            mode='markers',
+            marker=dict(color=line_color, size=10, symbol='circle', 
+                       line=dict(color='white', width=2)),
+            hovertemplate='Current: <b>$%{y:,.2f}</b><extra></extra>',
+            name='Current'
+        ))
 
-    # Layout - mobile optimized
-    layout = get_chart_layout(height=250)
+    # Layout - mobile optimized with crosshair spikes
+    layout = get_chart_layout(height=220)
     layout.update(
-        margin=dict(l=5, r=5, t=10, b=30),
-        xaxis=dict(showgrid=False, showticklabels=True, color='#64748b', tickfont=dict(size=10)),
-        yaxis=dict(showgrid=True, gridcolor='rgba(148, 163, 184, 0.08)', tickprefix='$', color='#64748b', tickfont=dict(size=10)),
+        margin=dict(l=5, r=5, t=5, b=30),
+        xaxis=dict(
+            showgrid=False, 
+            showticklabels=True, 
+            color='#64748b', 
+            tickfont=dict(size=10),
+            showspikes=True,
+            spikecolor='#8b5cf6',
+            spikethickness=1,
+            spikedash='solid',
+            spikemode='across',
+            spikesnap='cursor'
+        ),
+        yaxis=dict(
+            showgrid=True, 
+            gridcolor='rgba(148, 163, 184, 0.08)', 
+            tickprefix='$', 
+            color='#64748b', 
+            tickfont=dict(size=10),
+            showspikes=True,
+            spikecolor='#8b5cf6',
+            spikethickness=1,
+            spikedash='solid',
+            spikemode='across',
+            spikesnap='cursor'
+        ),
+        hovermode='x unified',
+        spikedistance=-1,
     )
     fig.update_layout(**layout)
 
-    return fig
+    return fig, {
+        'start_value': start_value,
+        'end_value': end_value,
+        'period_change': period_change,
+        'period_change_pct': period_change_pct,
+        'is_positive': is_positive
+    }
 
 
 def create_movers_chart(holdings: list, top_n: int = 5, show_gainers: bool = True):
@@ -360,8 +421,30 @@ def main():
                 st.session_state.selected_period = period
                 st.rerun()
 
-    # Portfolio chart
-    chart = create_portfolio_chart(st.session_state.selected_period, data['total_value'])
+    # Portfolio chart with dynamic value display
+    chart, chart_data = create_portfolio_chart(st.session_state.selected_period, data['total_value'])
+    
+    # Dynamic Value Display Header
+    period_labels = {
+        '1D': 'Today', '1W': 'This Week', '1M': 'This Month', 
+        '3M': 'Last 3 Months', 'YTD': 'Year to Date', '1Y': 'Last Year', 'ALL': 'All Time'
+    }
+    current_period = period_labels.get(st.session_state.selected_period, 'Selected Period')
+    
+    change_class = "gain" if chart_data['is_positive'] else "loss"
+    change_sign = "+" if chart_data['is_positive'] else ""
+    
+    st.markdown(f"""
+    <div class="chart-value-header">
+        <div class="chart-main-value">${chart_data['end_value']:,.0f}</div>
+        <div class="chart-value-change {change_class}">
+            <span class="amount">{change_sign}${chart_data['period_change']:,.0f}</span>
+            <span>({change_sign}{chart_data['period_change_pct']:.1f}%)</span>
+        </div>
+        <div class="chart-period-label">{current_period}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
     st.plotly_chart(chart, use_container_width=True, config={'displayModeBar': False})
 
     st.markdown("---")
