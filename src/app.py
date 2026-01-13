@@ -294,6 +294,101 @@ def create_movers_chart(holdings: list, top_n: int = 5, show_gainers: bool = Tru
     return fig
 
 
+def create_allocation_donut(holdings: list, total_value: float):
+    """Create a donut chart showing portfolio allocation by asset.
+    
+    Features:
+    - Vibrant color palette that matches Alpine Dusk theme
+    - Center hole with total value display
+    - Hover shows value and percentage
+    - Top 8 holdings + "Others" for clarity
+    """
+    if not holdings or total_value <= 0:
+        return None
+    
+    # Sort by value and take top 8, group rest as "Others"
+    sorted_holdings = sorted(holdings, key=lambda x: x['current_value'], reverse=True)
+    
+    if len(sorted_holdings) > 8:
+        top_holdings = sorted_holdings[:8]
+        others_value = sum(h['current_value'] for h in sorted_holdings[8:])
+        labels = [h['ticker'] for h in top_holdings] + ['Others']
+        values = [h['current_value'] for h in top_holdings] + [others_value]
+    else:
+        labels = [h['ticker'] for h in sorted_holdings]
+        values = [h['current_value'] for h in sorted_holdings]
+    
+    # Alpine Dusk inspired color palette - vibrant and modern
+    colors = [
+        '#8b5cf6',  # Purple (primary accent)
+        '#06b6d4',  # Cyan
+        '#10b981',  # Emerald/Green
+        '#f59e0b',  # Amber
+        '#ef4444',  # Red
+        '#ec4899',  # Pink
+        '#6366f1',  # Indigo
+        '#14b8a6',  # Teal
+        '#64748b',  # Slate (for "Others")
+    ]
+    
+    fig = go.Figure()
+    
+    fig.add_trace(go.Pie(
+        labels=labels,
+        values=values,
+        hole=0.65,  # Donut hole size
+        marker=dict(
+            colors=colors[:len(labels)],
+            line=dict(color='#0a0a12', width=2)  # Dark border between segments
+        ),
+        textinfo='percent',
+        textposition='outside',
+        textfont=dict(
+            size=11,
+            color='#94a3b8',
+            family='JetBrains Mono'
+        ),
+        hovertemplate='<b>%{label}</b><br>$%{value:,.0f}<br>%{percent}<extra></extra>',
+        showlegend=True,
+        direction='clockwise',
+        sort=False  # Keep our sorted order
+    ))
+    
+    # Layout with center annotation showing total
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        height=280,
+        margin=dict(l=20, r=20, t=20, b=20),
+        showlegend=True,
+        legend=dict(
+            orientation='h',
+            yanchor='bottom',
+            y=-0.15,
+            xanchor='center',
+            x=0.5,
+            font=dict(size=10, color='#94a3b8'),
+            bgcolor='rgba(0,0,0,0)'
+        ),
+        annotations=[
+            dict(
+                text=f'<b>${total_value:,.0f}</b>',
+                x=0.5, y=0.55,
+                font=dict(size=18, color='#f8fafc', family='Plus Jakarta Sans'),
+                showarrow=False
+            ),
+            dict(
+                text='Total Value',
+                x=0.5, y=0.42,
+                font=dict(size=11, color='#64748b', family='Plus Jakarta Sans'),
+                showarrow=False
+            )
+        ]
+    )
+    
+    return fig
+
+
 def render_holding_row(h: dict):
     """Render a single holding row with mobile-friendly layout and logo."""
     is_positive = h['pnl_pct'] >= 0
@@ -473,6 +568,16 @@ def main():
         st.caption("📊 *Limited history - chart shows growth from invested to current value*")
 
     st.markdown("---")
+    
+    # Allocation Donut Chart section
+    if data['holdings']:
+        section_label("Portfolio Allocation")
+        
+        donut_chart = create_allocation_donut(data['holdings'], data['total_value'])
+        if donut_chart:
+            st.plotly_chart(donut_chart, use_container_width=True, config={'displayModeBar': False})
+        
+        st.markdown("---")
 
     # Performance section
     if data['holdings']:
