@@ -1106,13 +1106,29 @@ def get_base_styles():
         }
 
         /* ==================== RENAME "app" TO "Home" IN SIDEBAR NAV ==================== */
-        /* Hide the original "app" text and replace with "Home" */
-        [data-testid="stSidebarNav"] > ul > li:first-child a span {
-            font-size: 0 !important;
+        /* Replace "app" text with "Home" using text-indent and background */
+        [data-testid="stSidebarNav"] > ul > li:first-child a {
+            position: relative;
         }
-        [data-testid="stSidebarNav"] > ul > li:first-child a span::after {
+        
+        [data-testid="stSidebarNav"] > ul > li:first-child a span[kind="bodySmall"] {
+            color: transparent !important;
+        }
+        
+        [data-testid="stSidebarNav"] > ul > li:first-child a::after {
             content: "Home";
-            font-size: 14px !important;
+            position: absolute;
+            left: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        [data-testid="stSidebarNav"] > ul > li:first-child a:hover::after,
+        [data-testid="stSidebarNav"] > ul > li:first-child a[aria-selected="true"]::after {
+            color: var(--text-primary);
         }
     </style>
     """
