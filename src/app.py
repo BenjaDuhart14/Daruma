@@ -72,6 +72,10 @@ with st.sidebar:
 
     st.markdown("---")
 
+    if st.button("🔄 Refresh Data", use_container_width=True):
+        st.cache_data.clear()
+        st.rerun()
+
     if st.button("🚪 Sign Out", use_container_width=True):
         logout()
 
