@@ -1,284 +1,98 @@
 # Next Steps: Daruma
 
 ## Overview
-This document outlines the remaining work to have Daruma fully functional as a private, secure investment portfolio tracker optimized for iPhone usage.
+Daruma is now **LIVE and fully functional** as a private investment portfolio tracker optimized for iPhone usage.
 
-**Last Updated**: January 12, 2026
+**Last Updated**: January 13, 2026
+**Status**: PRODUCTION READY
 
 ---
 
-## CURRENT SPRINT: Data & UI Fixes - ALL COMPLETE
+## COMPLETED: All Critical Fixes
 
-### Phase 0A: Fix Supabase Connection in Streamlit Cloud
-**Status**: COMPLETED
-**Priority**: CRITICAL
+### January 13, 2026 - Crypto Ticker Fix
+**Problem**: EWT (Energy Web Token) showing wrong price ($66.62 instead of $0.81)
+- yfinance `EWT` returns iShares Taiwan ETF
+- yfinance `EWT-USD` returns Energy Web Token
 
-**Problem**: `supabase_client.py` used `os.getenv()` which works locally and in GitHub Actions, but Streamlit Cloud stores secrets via `st.secrets` which is accessed differently.
-
-**Root Cause**: Initially tried `st.secrets.get('KEY')` but `st.secrets` doesn't support `.get()` method - must use bracket notation `st.secrets['KEY']`.
-
-**Solution** (implemented in `src/utils/supabase_client.py`):
+**Solution**: Updated `ticker_mapping.py` with crypto `-USD` suffix mappings:
 ```python
-def get_client() -> Client:
-    # Try environment variables first (local dev, GitHub Actions)
-    url = os.getenv('SUPABASE_URL')
-    key = os.getenv('SUPABASE_KEY')
-
-    # Fallback to Streamlit secrets (Streamlit Cloud)
-    if not url or not key:
-        try:
-            import streamlit as st
-            if not url and 'SUPABASE_URL' in st.secrets:
-                url = st.secrets['SUPABASE_URL']
-            if not key and 'SUPABASE_KEY' in st.secrets:
-                key = st.secrets['SUPABASE_KEY']
-        except Exception:
-            pass
-
-    if not url or not key:
-        raise ValueError('SUPABASE_URL and SUPABASE_KEY must be set')
-
-    return create_client(url, key)
+'EWT': 'EWT-USD',
+'AVAIL': 'AVAIL-USD',
+'CAKE': 'CAKE-USD',
+# Plus 17 more common crypto tickers
 ```
 
-**Streamlit Cloud Secrets Format** (in dashboard Settings -> Secrets):
-```toml
-[auth]
-email = "your-email@example.com"
-password = "your-password"
+**Key Learning**: All crypto tickers need `-USD` suffix for yfinance. When adding new cryptos, always add them to `ticker_mapping.py`.
 
-SUPABASE_URL = "https://pvxetjsadcgaeeqmauzz.supabase.co"
-SUPABASE_KEY = "your-supabase-anon-key"
-```
+### January 12, 2026 - Supabase Connection
+- Fixed `st.secrets` bracket notation (not `.get()`)
+- Supports secrets at root level OR under `[auth]` section
 
-**Key Learning**: Always use `st.secrets['KEY']` bracket notation, NOT `st.secrets.get('KEY')`.
-
----
-
-### Phase 0B: Populate current_prices Table
-**Status**: COMPLETED
-**Priority**: CRITICAL
-
-**Problem**: `current_prices` table is empty, so `holdings_with_value` view shows NULL values.
-
-**Solution**:
-```bash
-cd /home/benjaduhart14/investment-tracker
-source venv/bin/activate
-python src/scripts/update_prices.py
-```
-
-Or trigger GitHub Actions manually.
-
----
-
-### Phase 0C: Fix GitHub Actions Workflow
-**Status**: COMPLETED
-**Priority**: CRITICAL
-
-**Problem**: Workflow ran 6 minutes ago but nothing happened.
-
-**Investigation**:
-- [ ] Check workflow logs at https://github.com/BenjaDuhart14/Daruma/actions
-- [ ] Verify SUPABASE_URL and SUPABASE_KEY secrets are set in GitHub
-- [ ] Check if yfinance is fetching prices correctly
-- [ ] Review any error messages in logs
-
----
-
-### Phase 1: Hide Sidebar Navigation on Login Page
-**Status**: COMPLETED
-**Priority**: CRITICAL
-
-**Problem**: Users can see page navigation (Holdings, Performance, etc.) before authenticating.
-
-**Solution**: Add CSS to hide Streamlit's auto-generated sidebar nav on login page:
-```css
-[data-testid="stSidebarNav"] { display: none; }
-```
-
-**Files to modify**:
-- `src/utils/auth.py` - Add CSS in `_apply_login_styles()`
-
----
-
-### Phase 2: Delete Import Page
-**Status**: COMPLETED
-**Priority**: HIGH
-
-**Problem**: Import functionality should be done via CLI, not exposed in the app.
-
-**Solution**:
-```bash
-rm src/pages/5_Import.py
-```
-
----
-
-### Phase 3: Add Transaction History Log
-**Status**: COMPLETED
-**Priority**: HIGH
-
-**Problem**: No way to verify transactions were saved correctly in Add Transaction page.
-
-**Solution**: Add "Recent Transactions" section showing:
-- Last 10-20 transactions
-- Date, Ticker, Type (BUY/SELL), Quantity, Price
-- Delete button for each row
-- Filter by ticker
-
-**Files to modify**:
-- `src/pages/4_Add_Transaction.py`
-
----
-
-### Phase 4: Fix Chart Overflow Issues
-**Status**: COMPLETED
-**Priority**: CRITICAL
-
-**Problem**: Charts have 70px left/right margins, leaving only 235px on 375px screens.
-
-**Solution**:
-- Reduce margins to `l=10, r=10` on mobile
-- Use `textposition='inside'` for bar labels
-- Add responsive margin calculation
-
-**Files to modify**:
-- `src/utils/styles.py` - Chart CSS
-- `src/app.py` - Dashboard charts
-- `src/pages/2_Performance.py` - Performance charts
-- `src/pages/3_Dividends.py` - Dividend charts
-
----
-
-### Phase 5: Mobile-Friendly Period Filters
-**Status**: COMPLETED
-**Priority**: HIGH
-
-**Problem**: 4-column button layout breaks on mobile (480px = ~114px per button).
-
-**Solution**:
-- Use horizontal scrollable container OR
-- Reduce to pill-style buttons with smaller padding
-- Ensure 44px minimum touch target
-
-**Files to modify**:
-- `src/app.py` - Dashboard period selector
-- `src/pages/2_Performance.py` - Performance period selector
-- `src/utils/styles.py` - Button CSS
-
----
-
-### Phase 6: Fix Data Row/Card Display on Mobile
-**Status**: COMPLETED
-**Priority**: MEDIUM
-
-**Problem**: 2-column grid too cramped at 375px width.
-
-**Solution**:
-- Stack to 1 column on <375px
-- Increase font contrast
-- Add proper spacing between items
-
-**Files to modify**:
-- `src/utils/styles.py` - `.data-row-mobile` CSS
-- `src/pages/1_Holdings.py` - Holdings card layout
-
----
-
-### Phase 7: Connect Performance Page to Real Data
-**Status**: COMPLETED
-**Priority**: HIGH
-
-**Problem**: Performance page uses mock data (`get_mock_performance()`), not real portfolio.
-
-**Solution**:
-- Replace mock functions with Supabase calls
-- Use `portfolio_snapshots` table for historical chart
-- Calculate real performance metrics from transactions
-
-**Files to modify**:
-- `src/pages/2_Performance.py` - Replace mock data functions
-
----
-
-## COMPLETED PHASES
-
-### Phase 1 (Old) - Data Import Setup
-- Delta CSV import page ready
-- Preview and validation before importing
-- Duplicate detection working
-
-### Phase 2 (Old) - User Authentication
-- Login page with Alpine Dusk theme
-- Email/password auth via Streamlit secrets
-- All pages protected with `check_password()`
-- Logout button in sidebar
-
-### Phase 3 (Old) - UI Redesign (Alpine Dusk Theme)
-- 900+ lines of CSS in `styles.py`
-- Glassmorphism cards, purple gradients
-- Green/red for gains/losses
-
-### Phase 4 (Old) - Mobile-First Responsive Design
-- 3 breakpoints: 768px, 480px, 375px
-- 2x2 grid layouts for metrics
-- Touch-optimized active states
-
-### Phase 5 (Old) - Data Import
-- 210 transactions imported from Delta CSV
-- 37 unique tickers
+### January 11-12, 2026 - UI/UX Fixes
+- Hidden sidebar on login
+- Mobile-optimized charts
+- Transaction history with delete
+- Performance page with real data
+- Compact period filter buttons
 
 ---
 
 ## FUTURE ENHANCEMENTS
 
 ### High Priority
-- [ ] Portfolio allocation pie chart
-- [ ] Performance vs S&P 500 benchmark
-- [ ] Edit/delete transactions
+| Feature | Description | Complexity |
+|---------|-------------|------------|
+| Portfolio Allocation Pie Chart | Visual breakdown of holdings by value | Medium |
+| S&P 500 Benchmark | Compare performance vs index | Medium |
+| Edit Transactions | Modify existing transactions (delete works) | Low |
 
 ### Medium Priority
-- [ ] Export data to CSV
-- [ ] Currency toggle (USD/CLP display)
-- [ ] Dividend calendar view
+| Feature | Description | Complexity |
+|---------|-------------|------------|
+| Export to CSV | Download transactions/holdings | Low |
+| Currency Toggle | Switch display USD/CLP | Medium |
+| Dividend Calendar | Visual calendar of payment dates | Medium |
 
 ### Low Priority
-- [ ] Price alerts via email
-- [ ] Multiple portfolios support
-- [ ] Dark/light theme toggle
+| Feature | Description | Complexity |
+|---------|-------------|------------|
+| Price Alerts | Email notifications for price targets | High |
+| Multiple Portfolios | Support separate portfolios | High |
+| Dark/Light Toggle | Theme switching | Low |
 
 ---
 
-## Technical Architecture
+## Technical Notes
 
-### File Structure (After Phase 2)
-```
-src/
-├── app.py                    # Main dashboard
-├── pages/
-│   ├── 1_Holdings.py         # Portfolio holdings with logos
-│   ├── 2_Performance.py      # Performance charts (needs real data)
-│   ├── 3_Dividends.py        # Dividend tracking
-│   └── 4_Add_Transaction.py  # Manual entry + transaction log
-└── utils/
-    ├── auth.py               # Authentication
-    ├── styles.py             # Alpine Dusk design system
-    ├── supabase_client.py    # Database operations
-    ├── price_fetcher.py      # yfinance integration
-    ├── calculations.py       # Portfolio math
-    └── delta_parser.py       # CSV parsing
+### Adding New Crypto Tickers
+When importing transactions with a new crypto:
+1. Add mapping to `src/utils/ticker_mapping.py`:
+   ```python
+   'NEWCRYPTO': 'NEWCRYPTO-USD',
+   ```
+2. Run price update or wait for GitHub Actions
+3. Click "Refresh Data" in app
+
+### Streamlit Cloud Secrets Format
+```toml
+SUPABASE_URL = "https://pvxetjsadcgaeeqmauzz.supabase.co"
+SUPABASE_KEY = "your-anon-key"
+
+[auth]
+email = "your-email"
+password = "your-password"
 ```
 
 ### Data Flow
 ```
-transactions (210 records)
+transactions (211 records)
     → current_holdings (view)
         → holdings_with_value (view)
             ↑
-        current_prices (populated by GitHub Actions)
+        current_prices (GitHub Actions every 4h)
             ↑
-        update_prices.py (runs every 4 hours)
+        ticker_mapping.py (converts to yfinance format)
 ```
 
 ---
@@ -291,17 +105,16 @@ cd /home/benjaduhart14/investment-tracker
 streamlit run src/app.py --server.port 8502
 ```
 
-### Run Price Update Manually
+### Manual Price Update
 ```bash
 cd /home/benjaduhart14/investment-tracker
 python src/scripts/update_prices.py
 ```
 
-### Git Workflow
+### Git Push
 ```bash
-git add .
-git commit -m "Description of changes"
-git push origin main
+cd /home/benjaduhart14/investment-tracker
+git add . && git commit -m "message" && git push origin main
 ```
 
 ---
@@ -311,3 +124,19 @@ git push origin main
 - **GitHub Repo**: https://github.com/BenjaDuhart14/Daruma
 - **GitHub Actions**: https://github.com/BenjaDuhart14/Daruma/actions
 - **Supabase**: https://pvxetjsadcgaeeqmauzz.supabase.co
+
+---
+
+## Troubleshooting
+
+### App shows old data
+→ Click "🔄 Refresh Data" in sidebar
+
+### New crypto shows wrong price
+→ Add ticker to `ticker_mapping.py` with `-USD` suffix
+
+### Streamlit Cloud not updating
+→ Check GitHub Actions logs, may need to reboot app
+
+### Database connection error
+→ Verify secrets in Streamlit Cloud dashboard (Settings → Secrets)
