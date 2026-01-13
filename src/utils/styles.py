@@ -1187,50 +1187,8 @@ def get_daruma_logo(size: int = 40):
     Args:
         size: Size in pixels for the logo (width and height)
     """
-    return f'''
-    <svg width="{size}" height="{size}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <!-- Body - rounded red shape with gradient -->
-        <defs>
-            <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#ef4444"/>
-                <stop offset="100%" style="stop-color:#dc2626"/>
-            </linearGradient>
-            <linearGradient id="faceGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#fef3c7"/>
-                <stop offset="100%" style="stop-color:#fde68a"/>
-            </linearGradient>
-        </defs>
-        
-        <!-- Outer body shadow -->
-        <ellipse cx="52" cy="57" rx="40" ry="42" fill="rgba(0,0,0,0.3)"/>
-        
-        <!-- Main body -->
-        <ellipse cx="50" cy="55" rx="40" ry="42" fill="url(#bodyGradient)"/>
-        
-        <!-- Face area - cream/gold -->
-        <ellipse cx="50" cy="48" rx="28" ry="24" fill="url(#faceGradient)"/>
-        
-        <!-- Left eye - PAINTED (goal set) - filled circle -->
-        <circle cx="38" cy="45" r="10" fill="#1f2937"/>
-        <circle cx="35" cy="42" r="3" fill="white" opacity="0.8"/>
-        
-        <!-- Right eye - EMPTY (goal in progress) - just outline -->
-        <circle cx="62" cy="45" r="10" fill="none" stroke="#1f2937" stroke-width="2.5"/>
-        
-        <!-- Eyebrows - determined look -->
-        <path d="M26 34 Q38 30 48 35" stroke="#1f2937" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <path d="M52 35 Q62 30 74 34" stroke="#1f2937" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        
-        <!-- Nose hint -->
-        <ellipse cx="50" cy="52" rx="2" ry="1.5" fill="#d97706" opacity="0.4"/>
-        
-        <!-- Mouth - slight determined expression -->
-        <path d="M42 62 Q50 58 58 62" stroke="#1f2937" stroke-width="2" fill="none" stroke-linecap="round"/>
-        
-        <!-- Decorative gold band at bottom -->
-        <path d="M20 75 Q50 85 80 75" stroke="#f59e0b" stroke-width="3" fill="none" opacity="0.6"/>
-    </svg>
-    '''
+    # Using inline colors instead of defs/gradients for Streamlit compatibility
+    return f'''<svg width="{size}" height="{size}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="52" cy="57" rx="40" ry="42" fill="rgba(0,0,0,0.3)"/><ellipse cx="50" cy="55" rx="40" ry="42" fill="#ef4444"/><ellipse cx="50" cy="48" rx="28" ry="24" fill="#fef3c7"/><circle cx="38" cy="45" r="10" fill="#1f2937"/><circle cx="35" cy="42" r="3" fill="white" opacity="0.8"/><circle cx="62" cy="45" r="10" fill="none" stroke="#1f2937" stroke-width="2.5"/><path d="M26 34 Q38 30 48 35" stroke="#1f2937" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M52 35 Q62 30 74 34" stroke="#1f2937" stroke-width="2.5" fill="none" stroke-linecap="round"/><ellipse cx="50" cy="52" rx="2" ry="1.5" fill="#d97706" opacity="0.4"/><path d="M42 62 Q50 58 58 62" stroke="#1f2937" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M20 75 Q50 85 80 75" stroke="#f59e0b" stroke-width="3" fill="none" opacity="0.6"/></svg>'''
 
 
 def get_daruma_logo_inline(size: int = 24):
