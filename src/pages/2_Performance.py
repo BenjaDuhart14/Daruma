@@ -10,7 +10,7 @@ from datetime import datetime, date
 import numpy as np
 from utils import supabase_client as db
 from utils.auth import check_password
-from utils.styles import apply_styles, section_label, page_header, get_chart_layout, CHART_COLORS
+from utils.styles import apply_styles, section_label, page_header, get_chart_layout, CHART_COLORS, get_daruma_logo
 
 st.set_page_config(
     page_title="Performance - Daruma",
@@ -198,7 +198,15 @@ def create_asset_bar_chart(assets: list):
 
 
 def main():
-    page_header("Performance", "Track your investment returns over time", "📈")
+    # Page header with Daruma logo
+    daruma_header = get_daruma_logo(32)
+    st.markdown(f"""
+    <div class="page-title">
+        <span class="daruma-logo">{daruma_header}</span>
+        Performance
+    </div>
+    <p class="page-subtitle">Track your investment returns over time</p>
+    """, unsafe_allow_html=True)
 
     # Period selector - 4+3 layout for mobile
     if 'perf_period' not in st.session_state:

@@ -1024,6 +1024,86 @@ def get_base_styles():
                 transform: none;
             }
         }
+
+        /* ==================== FLOATING ACTION BUTTON (FAB) ==================== */
+        .fab-add {
+            position: fixed;
+            bottom: 24px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            z-index: 9998;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: fab-pulse 2s ease-in-out infinite;
+        }
+
+        .fab-add:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.5);
+        }
+
+        .fab-add:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
+        }
+
+        @keyframes fab-pulse {
+            0%, 100% {
+                box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 30px rgba(139, 92, 246, 0.6);
+            }
+        }
+
+        /* FAB responsive adjustments */
+        @media (max-width: 480px) {
+            .fab-add {
+                bottom: 20px;
+                right: 16px;
+                width: 52px;
+                height: 52px;
+                border-radius: 26px;
+            }
+
+            .fab-add svg {
+                width: 24px;
+                height: 24px;
+            }
+        }
+
+        /* Safe area for iPhone notch */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .fab-add {
+                bottom: calc(24px + env(safe-area-inset-bottom));
+            }
+        }
+
+        /* ==================== DARUMA LOGO STYLES ==================== */
+        .daruma-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .daruma-logo svg {
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
     </style>
     """
 
@@ -1096,3 +1176,75 @@ def get_chart_layout(height: int = 300):
             font=dict(family='JetBrains Mono', size=12, color='#f8fafc')
         )
     )
+
+
+def get_daruma_logo(size: int = 40):
+    """Return the Daruma doll SVG logo.
+    
+    The logo shows a traditional Daruma doll with one eye painted (goal set)
+    and one eye empty (goal in progress) - representing the investment journey.
+    
+    Args:
+        size: Size in pixels for the logo (width and height)
+    """
+    return f'''
+    <svg width="{size}" height="{size}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <!-- Body - rounded red shape with gradient -->
+        <defs>
+            <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ef4444"/>
+                <stop offset="100%" style="stop-color:#dc2626"/>
+            </linearGradient>
+            <linearGradient id="faceGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#fef3c7"/>
+                <stop offset="100%" style="stop-color:#fde68a"/>
+            </linearGradient>
+        </defs>
+        
+        <!-- Outer body shadow -->
+        <ellipse cx="52" cy="57" rx="40" ry="42" fill="rgba(0,0,0,0.3)"/>
+        
+        <!-- Main body -->
+        <ellipse cx="50" cy="55" rx="40" ry="42" fill="url(#bodyGradient)"/>
+        
+        <!-- Face area - cream/gold -->
+        <ellipse cx="50" cy="48" rx="28" ry="24" fill="url(#faceGradient)"/>
+        
+        <!-- Left eye - PAINTED (goal set) - filled circle -->
+        <circle cx="38" cy="45" r="10" fill="#1f2937"/>
+        <circle cx="35" cy="42" r="3" fill="white" opacity="0.8"/>
+        
+        <!-- Right eye - EMPTY (goal in progress) - just outline -->
+        <circle cx="62" cy="45" r="10" fill="none" stroke="#1f2937" stroke-width="2.5"/>
+        
+        <!-- Eyebrows - determined look -->
+        <path d="M26 34 Q38 30 48 35" stroke="#1f2937" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M52 35 Q62 30 74 34" stroke="#1f2937" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        
+        <!-- Nose hint -->
+        <ellipse cx="50" cy="52" rx="2" ry="1.5" fill="#d97706" opacity="0.4"/>
+        
+        <!-- Mouth - slight determined expression -->
+        <path d="M42 62 Q50 58 58 62" stroke="#1f2937" stroke-width="2" fill="none" stroke-linecap="round"/>
+        
+        <!-- Decorative gold band at bottom -->
+        <path d="M20 75 Q50 85 80 75" stroke="#f59e0b" stroke-width="3" fill="none" opacity="0.6"/>
+    </svg>
+    '''
+
+
+def get_daruma_logo_inline(size: int = 24):
+    """Return a smaller inline version of the Daruma logo for headers."""
+    return f'''<span style="display: inline-flex; align-items: center; vertical-align: middle;">{get_daruma_logo(size)}</span>'''
+
+
+def render_fab_button():
+    """Render the Floating Action Button (FAB) for quick transaction adding."""
+    st.markdown('''
+    <a href="/Add_Transaction" target="_self" class="fab-add" title="Add Transaction">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+    </a>
+    ''', unsafe_allow_html=True)

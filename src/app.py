@@ -11,7 +11,7 @@ import numpy as np
 
 from utils import supabase_client as db
 from utils.auth import check_password, logout
-from utils.styles import apply_styles, get_chart_layout, section_label, page_header, CHART_COLORS
+from utils.styles import apply_styles, get_chart_layout, section_label, page_header, CHART_COLORS, get_daruma_logo, render_fab_button
 
 
 def get_logo_url(ticker: str, asset_type: str) -> str:
@@ -52,19 +52,12 @@ check_password()
 
 # Sidebar
 with st.sidebar:
-    st.markdown("""
+    daruma_logo = get_daruma_logo(50)
+    st.markdown(f"""
     <div style="padding: 20px 0; text-align: center;">
-        <div style="
-            width: 50px;
-            height: 50px;
-            margin: 0 auto 12px;
-            background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        ">🎯</div>
+        <div class="sidebar-logo">
+            {daruma_logo}
+        </div>
         <h3 style="margin: 0; color: #f8fafc; font-size: 18px; font-weight: 700;">Daruma</h3>
         <p style="margin: 4px 0 0; color: #64748b; font-size: 12px;">Portfolio Tracker</p>
     </div>
@@ -289,8 +282,15 @@ def render_holding_row(h: dict):
 def main():
     data = get_portfolio_data()
 
-    # Page header
-    page_header("Dashboard", "Track your portfolio performance", "📊")
+    # Page header - now "Home" instead of "Dashboard"
+    daruma_header = get_daruma_logo(32)
+    st.markdown(f"""
+    <div class="page-title">
+        <span class="daruma-logo">{daruma_header}</span>
+        Home
+    </div>
+    <p class="page-subtitle">Track your portfolio performance</p>
+    """, unsafe_allow_html=True)
 
     if not data['connected']:
         st.warning("⚠️ Not connected to database. Please check your Supabase credentials.")
@@ -412,6 +412,9 @@ def main():
             <p style="color: var(--text-secondary);">Import your Delta CSV or add transactions manually to get started.</p>
         </div>
         """, unsafe_allow_html=True)
+
+    # Floating Action Button for quick transaction adding
+    render_fab_button()
 
 
 if __name__ == "__main__":

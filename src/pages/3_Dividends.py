@@ -9,7 +9,7 @@ import pandas as pd
 from datetime import datetime
 from utils import supabase_client as db
 from utils.auth import check_password
-from utils.styles import apply_styles, section_label, page_header, get_chart_layout, CHART_COLORS
+from utils.styles import apply_styles, section_label, page_header, get_chart_layout, CHART_COLORS, get_daruma_logo
 
 st.set_page_config(
     page_title="Dividends - Daruma",
@@ -149,7 +149,15 @@ def create_ticker_chart(by_ticker: list):
 
 
 def main():
-    page_header("Dividends", "Track your passive income from dividends", "💰")
+    # Page header with Daruma logo
+    daruma_header = get_daruma_logo(32)
+    st.markdown(f"""
+    <div class="page-title">
+        <span class="daruma-logo">{daruma_header}</span>
+        Dividends
+    </div>
+    <p class="page-subtitle">Track your passive income from dividends</p>
+    """, unsafe_allow_html=True)
 
     data = get_dividend_data()
 

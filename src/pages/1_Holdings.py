@@ -7,11 +7,11 @@ import streamlit as st
 import pandas as pd
 from utils import supabase_client as db
 from utils.auth import check_password
-from utils.styles import apply_styles, section_label, page_header
+from utils.styles import apply_styles, section_label, page_header, get_daruma_logo
 
 st.set_page_config(
     page_title="Holdings - Daruma",
-    page_icon="🎯",
+    page_icon="🎯",  # Note: Streamlit requires emoji/string for page_icon
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -145,7 +145,15 @@ def render_holding_card(h: dict):
 
 
 def main():
-    page_header("Holdings", "Your complete portfolio breakdown", "💼")
+    # Page header with Daruma logo
+    daruma_header = get_daruma_logo(32)
+    st.markdown(f"""
+    <div class="page-title">
+        <span class="daruma-logo">{daruma_header}</span>
+        Holdings
+    </div>
+    <p class="page-subtitle">Your complete portfolio breakdown</p>
+    """, unsafe_allow_html=True)
 
     # Filters - 2 columns for better mobile display
     sort_options = {

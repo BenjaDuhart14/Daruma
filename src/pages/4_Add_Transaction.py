@@ -7,7 +7,7 @@ import streamlit as st
 from datetime import datetime, date
 from utils import supabase_client as db
 from utils.auth import check_password
-from utils.styles import apply_styles, section_label, page_header
+from utils.styles import apply_styles, section_label, page_header, get_daruma_logo
 
 st.set_page_config(
     page_title="Add Transaction - Daruma",
@@ -73,7 +73,15 @@ def save_transaction(transaction: dict) -> bool:
 
 
 def main():
-    page_header("Add Transaction", "Record a new buy or sell transaction", "➕")
+    # Page header with Daruma logo
+    daruma_header = get_daruma_logo(32)
+    st.markdown(f"""
+    <div class="page-title">
+        <span class="daruma-logo">{daruma_header}</span>
+        Add Transaction
+    </div>
+    <p class="page-subtitle">Record a new buy or sell transaction</p>
+    """, unsafe_allow_html=True)
 
     existing_tickers = get_existing_tickers()
 
