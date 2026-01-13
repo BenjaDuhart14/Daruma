@@ -28,49 +28,53 @@ check_password()
 
 @st.cache_data(ttl=300)
 def get_portfolio_performance(period: str):
-    """Get real portfolio performance from Supabase snapshots."""
+    """Get real portfolio performance from Supabase snapshots.
+    
+    Always uses LIVE data from portfolio_summary for current values,
+    and historical snapshots only for the chart history.
+    """
     days_map = {'1D': 1, '1W': 7, '1M': 30, '3M': 90, 'YTD': 180, '1Y': 365, 'ALL': 730}
     days = days_map.get(period, 30)
 
     try:
         client = db.get_client()
+        
+        # Always get live data first
+        summary = db.get_portfolio_summary(client)
+        current_value = float(summary.get('total_value') or 0)
+        total_cost = float(summary.get('total_invested') or 0)
+        
+        # Get historical snapshots
         snapshots = db.get_portfolio_snapshots(client, days=days)
+        
+        has_history = snapshots and len(snapshots) > 1
 
-        if snapshots and len(snapshots) > 1:
+        if has_history:
             dates = pd.to_datetime([s['snapshot_date'] for s in snapshots])
             values = np.array([float(s['total_value'] or 0) for s in snapshots])
-
-            return {
-                'dates': dates,
-                'values': values,
-                'start_value': values[0],
-                'end_value': values[-1],
-                'change': values[-1] - values[0],
-                'change_pct': ((values[-1] - values[0]) / values[0]) * 100 if values[0] > 0 else 0,
-                'high': max(values),
-                'low': min(values),
-                'connected': True
-            }
+            # Replace last value with LIVE current value
+            values[-1] = current_value
+            start_value = values[0]
         else:
-            # Get current portfolio value as fallback
-            summary = db.get_portfolio_summary(client)
-            current_value = float(summary.get('total_value') or 0)
-            total_cost = float(summary.get('total_invested') or 0)
+            # No history - create simple cost to current line
+            num_points = min(days, 30) if days > 1 else 2
+            dates = pd.date_range(end=datetime.now(), periods=num_points, freq='D')
+            start_val = total_cost if total_cost > 0 else current_value * 0.95
+            values = np.linspace(start_val, current_value, num_points)
+            start_value = start_val
 
-            dates = pd.date_range(end=datetime.now(), periods=2, freq='D')
-            values = np.array([total_cost, current_value]) if total_cost > 0 else np.array([current_value, current_value])
-
-            return {
-                'dates': dates,
-                'values': values,
-                'start_value': total_cost if total_cost > 0 else current_value,
-                'end_value': current_value,
-                'change': current_value - total_cost,
-                'change_pct': ((current_value - total_cost) / total_cost) * 100 if total_cost > 0 else 0,
-                'high': current_value,
-                'low': min(total_cost, current_value) if total_cost > 0 else current_value,
-                'connected': True
-            }
+        return {
+            'dates': dates,
+            'values': values,
+            'start_value': start_value,
+            'end_value': current_value,  # Always use LIVE value
+            'change': current_value - start_value,
+            'change_pct': ((current_value - start_value) / start_value) * 100 if start_value > 0 else 0,
+            'high': max(max(values), current_value),
+            'low': min(values),
+            'connected': True,
+            'has_history': has_history
+        }
     except Exception as e:
         st.error(f"Database error: {str(e)}")
         return {
@@ -82,7 +86,8 @@ def get_portfolio_performance(period: str):
             'change_pct': 0,
             'high': 0,
             'low': 0,
-            'connected': False
+            'connected': False,
+            'has_history': False
         }
 
 
@@ -237,6 +242,9 @@ def main():
 
     if not data.get('connected', True):
         st.warning("⚠️ Could not connect to database.")
+    
+    if not data.get('has_history', True):
+        st.info("📊 Limited history available. Chart shows estimated growth from invested amount to current value. Historical snapshots will accumulate over time.")
 
     # Summary metrics - 2x2 grid for mobile
     is_positive = data['change'] >= 0

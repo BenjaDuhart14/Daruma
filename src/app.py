@@ -101,7 +101,7 @@ def get_portfolio_data():
 
         return {
             'total_value': float(summary.get('total_value') or 0),
-            'total_cost': float(summary.get('total_invested') or 0),
+            'total_invested': float(summary.get('total_invested') or 0),
             'total_pnl': float(summary.get('total_pnl') or 0),
             'total_pnl_pct': float(summary.get('total_pnl_percent') or 0),
             'holdings': holdings,
@@ -111,7 +111,7 @@ def get_portfolio_data():
         st.error(f"Database connection error: {str(e)}")
         return {
             'total_value': 0,
-            'total_cost': 0,
+            'total_invested': 0,
             'total_pnl': 0,
             'total_pnl_pct': 0,
             'holdings': [],
@@ -129,31 +129,46 @@ def get_portfolio_history(days: int = 365):
         return []
 
 
-def create_portfolio_chart(period: str, current_value: float = 0):
-    """Create portfolio evolution line chart with Alpine Dusk styling and crosshairs."""
+def create_portfolio_chart(period: str, current_value: float = 0, total_cost: float = 0):
+    """Create portfolio evolution line chart with Alpine Dusk styling and crosshairs.
+    
+    Uses current_value from live data, and historical snapshots if available.
+    Falls back to a simple cost->current line if no historical data.
+    """
     days_map = {'1D': 1, '1W': 7, '1M': 30, '3M': 90, 'YTD': 180, '1Y': 365, 'ALL': 730}
     days = days_map.get(period, 30)
 
     snapshots = get_portfolio_history(days)
-
-    if snapshots and len(snapshots) > 1:
+    
+    # Determine if we have valid historical data
+    has_history = snapshots and len(snapshots) > 1
+    
+    if has_history:
         dates = pd.to_datetime([s['snapshot_date'] for s in snapshots])
         values = np.array([float(s['total_value']) for s in snapshots])
+        # Replace the last value with actual current value (live data)
+        values[-1] = current_value
     else:
+        # No historical data - create a simple line from cost to current
         if current_value > 0:
-            dates = pd.date_range(end=datetime.now(), periods=30, freq='D')
-            values = np.linspace(current_value * 0.95, current_value, 30)
+            num_points = min(days, 30) if days > 1 else 2
+            dates = pd.date_range(end=datetime.now(), periods=num_points, freq='D')
+            # Interpolate from invested cost to current value
+            start_val = total_cost if total_cost > 0 else current_value * 0.9
+            values = np.linspace(start_val, current_value, num_points)
         else:
             dates = pd.date_range(end=datetime.now(), periods=2, freq='D')
             values = np.array([0, 0])
 
-    is_positive = len(values) < 2 or values[-1] >= values[0]
+    # Always use current_value as the end value (live data)
+    end_value = current_value
+    start_value = values[0] if len(values) > 0 else total_cost
+    
+    is_positive = end_value >= start_value
     line_color = CHART_COLORS['gain'] if is_positive else CHART_COLORS['loss']
     fill_color = 'rgba(16, 185, 129, 0.1)' if is_positive else 'rgba(239, 68, 68, 0.1)'
     
     # Calculate period change for display
-    start_value = values[0] if len(values) > 0 else 0
-    end_value = values[-1] if len(values) > 0 else 0
     period_change = end_value - start_value
     period_change_pct = ((end_value - start_value) / start_value * 100) if start_value > 0 else 0
 
@@ -186,7 +201,7 @@ def create_portfolio_chart(period: str, current_value: float = 0):
     if len(values) > 0:
         fig.add_trace(go.Scatter(
             x=[dates[-1]],
-            y=[values[-1]],
+            y=[current_value],  # Always use live current value
             mode='markers',
             marker=dict(color=line_color, size=10, symbol='circle', 
                        line=dict(color='white', width=2)),
@@ -233,7 +248,8 @@ def create_portfolio_chart(period: str, current_value: float = 0):
         'end_value': end_value,
         'period_change': period_change,
         'period_change_pct': period_change_pct,
-        'is_positive': is_positive
+        'is_positive': is_positive,
+        'has_history': has_history
     }
 
 
@@ -384,7 +400,7 @@ def main():
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">Invested</div>
-            <div class="metric-value">${data['total_cost']:,.0f}</div>
+            <div class="metric-value">${data['total_invested']:,.0f}</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -422,7 +438,12 @@ def main():
                 st.rerun()
 
     # Portfolio chart with dynamic value display
-    chart, chart_data = create_portfolio_chart(st.session_state.selected_period, data['total_value'])
+    # Pass both current_value and total_cost so chart can properly display
+    chart, chart_data = create_portfolio_chart(
+        st.session_state.selected_period, 
+        current_value=data['total_value'],
+        total_cost=data['total_invested']
+    )
     
     # Dynamic Value Display Header
     period_labels = {
@@ -446,6 +467,10 @@ def main():
     """, unsafe_allow_html=True)
     
     st.plotly_chart(chart, use_container_width=True, config={'displayModeBar': False})
+    
+    # Show notice if no historical data
+    if not chart_data.get('has_history', True):
+        st.caption("📊 *Limited history - chart shows growth from invested to current value*")
 
     st.markdown("---")
 
