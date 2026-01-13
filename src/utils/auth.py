@@ -125,9 +125,14 @@ def _apply_login_styles():
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
             box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
             animation: float 3s ease-in-out infinite;
+            padding: 12px;
+        }
+        
+        .login-logo svg {
+            width: 100%;
+            height: 100%;
         }
 
         @keyframes float {
@@ -258,7 +263,19 @@ def _show_login_page(show_error: bool = False):
         st.markdown("""
         <div class="login-container">
             <div class="login-header">
-                <div class="login-logo">🎯</div>
+                <div class="login-logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="50" cy="55" rx="40" ry="42" fill="#dc2626"/>
+                        <ellipse cx="50" cy="55" rx="38" ry="40" fill="#ef4444"/>
+                        <ellipse cx="50" cy="48" rx="28" ry="24" fill="#fef3c7"/>
+                        <circle cx="38" cy="45" r="10" fill="#1f2937"/>
+                        <circle cx="36" cy="43" r="3" fill="white"/>
+                        <circle cx="62" cy="45" r="10" fill="none" stroke="#1f2937" stroke-width="2"/>
+                        <path d="M28 35 Q38 32 48 36" stroke="#1f2937" stroke-width="2" fill="none"/>
+                        <path d="M52 36 Q62 32 72 35" stroke="#1f2937" stroke-width="2" fill="none"/>
+                        <path d="M40 60 Q50 56 60 60" stroke="#1f2937" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
                 <h1 class="login-title">Daruma</h1>
                 <p class="login-subtitle">Investment Portfolio Tracker</p>
             </div>
