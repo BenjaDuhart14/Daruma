@@ -85,17 +85,9 @@ def main():
 
     existing_tickers = get_existing_tickers()
 
-    # Form container
-    st.markdown("""
-    <div style="
-        background: var(--bg-card);
-        border: 1px solid var(--border-subtle);
-        border-radius: 16px;
-        padding: 24px;
-        margin-bottom: 24px;
-    ">
-    </div>
-    """, unsafe_allow_html=True)
+    # Initialize delete confirmation state
+    if 'delete_confirm_id' not in st.session_state:
+        st.session_state.delete_confirm_id = None
 
     with st.form("transaction_form"):
         col1, col2 = st.columns(2)
@@ -293,34 +285,61 @@ def main():
             tx_icon = "📈" if is_buy else "📉"
             tx_id = tx.get('id')
 
-            col_info, col_delete = st.columns([5, 1])
-
-            with col_info:
+            # Check if this transaction is pending deletion
+            if st.session_state.delete_confirm_id == tx_id:
                 st.markdown(f"""
-                <div class="data-row" style="margin-bottom: 8px;">
-                    <div style="display: flex; align-items: center; flex: 2;">
-                        <div class="ticker-badge" style="background: {tx_color};">
-                            {tx['ticker'][:2]}
-                        </div>
-                        <div>
-                            <div class="ticker-name">{tx_icon} {tx['type']} {tx['ticker']}</div>
-                            <div class="ticker-details">{tx['date'][:10] if tx['date'] else ''}</div>
-                        </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div class="value-display">{float(tx['quantity'] or 0):.4f} @ ${float(tx['price'] or 0):,.2f}</div>
-                        <div class="ticker-details">${float(tx['total_amount'] or 0):,.2f}</div>
-                    </div>
+                <div style="
+                    background: rgba(239, 68, 68, 0.1);
+                    border: 1px solid rgba(239, 68, 68, 0.3);
+                    border-radius: 12px;
+                    padding: 16px;
+                    margin-bottom: 8px;
+                ">
+                    <p style="color: var(--text-primary); margin: 0 0 12px 0; font-weight: 500;">
+                        ⚠️ Delete {tx['type']} {float(tx['quantity'] or 0):.4f} {tx['ticker']}?
+                    </p>
                 </div>
                 """, unsafe_allow_html=True)
-
-            with col_delete:
-                if tx_id and st.button("🗑️", key=f"del_{tx_id}", help="Delete transaction"):
-                    if delete_transaction_by_id(tx_id):
-                        st.success(f"Deleted {tx['ticker']} transaction")
+                
+                col_yes, col_no = st.columns(2)
+                with col_yes:
+                    if st.button("✓ Yes, Delete", key=f"confirm_{tx_id}", type="primary", use_container_width=True):
+                        if delete_transaction_by_id(tx_id):
+                            st.session_state.delete_confirm_id = None
+                            st.success(f"Deleted {tx['ticker']} transaction")
+                            st.rerun()
+                        else:
+                            st.error("Failed to delete")
+                with col_no:
+                    if st.button("✕ Cancel", key=f"cancel_{tx_id}", use_container_width=True):
+                        st.session_state.delete_confirm_id = None
                         st.rerun()
-                    else:
-                        st.error("Failed to delete")
+            else:
+                col_info, col_delete = st.columns([5, 1])
+
+                with col_info:
+                    st.markdown(f"""
+                    <div class="data-row" style="margin-bottom: 8px;">
+                        <div style="display: flex; align-items: center; flex: 2;">
+                            <div class="ticker-badge" style="background: {tx_color};">
+                                {tx['ticker'][:2]}
+                            </div>
+                            <div>
+                                <div class="ticker-name">{tx_icon} {tx['type']} {tx['ticker']}</div>
+                                <div class="ticker-details">{tx['date'][:10] if tx['date'] else ''}</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="value-display">{float(tx['quantity'] or 0):.4f} @ ${float(tx['price'] or 0):,.2f}</div>
+                            <div class="ticker-details">${float(tx['total_amount'] or 0):,.2f}</div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with col_delete:
+                    if tx_id and st.button("🗑️", key=f"del_{tx_id}", help="Delete transaction"):
+                        st.session_state.delete_confirm_id = tx_id
+                        st.rerun()
     else:
         st.markdown("""
         <div style="

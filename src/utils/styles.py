@@ -178,6 +178,100 @@ def get_base_styles():
             transform: translateY(-2px);
         }
 
+        /* Hero metric card - prominent display for main value */
+        .metric-card-hero {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 20px;
+            padding: 28px 32px;
+            margin-bottom: 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan), var(--accent-purple));
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .metric-value-hero {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 52px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.1;
+            margin: 8px 0 12px;
+            text-shadow: 0 4px 30px rgba(139, 92, 246, 0.2);
+        }
+
+        .metric-hero-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 12px;
+        }
+
+        .metric-hero-change.gain {
+            color: var(--gain);
+            background: var(--gain-bg);
+        }
+
+        .metric-hero-change.loss {
+            color: var(--loss);
+            background: var(--loss-bg);
+        }
+
+        .metric-hero-change .pct {
+            opacity: 0.8;
+        }
+
+        /* Responsive hero card */
+        @media (max-width: 480px) {
+            .metric-card-hero {
+                padding: 20px 16px;
+                border-radius: 16px;
+            }
+
+            .metric-value-hero {
+                font-size: 38px;
+            }
+
+            .metric-hero-change {
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .metric-value-hero {
+                font-size: 32px;
+            }
+
+            .metric-hero-change {
+                font-size: 12px;
+                flex-direction: column;
+                gap: 2px;
+            }
+        }
+
         .metric-label {
             font-size: 12px;
             font-weight: 500;
@@ -1215,7 +1309,89 @@ def get_base_styles():
 
         /* Period selector uses native Streamlit buttons with primary/secondary styling */
 
-        /* Bottom nav disabled - using sidebar for navigation */
+        /* ==================== BOTTOM NAVIGATION BAR ==================== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: rgba(10, 10, 18, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 8px;
+            z-index: 9999;
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+            min-width: 64px;
+        }
+
+        .bottom-nav-item svg {
+            stroke: var(--text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .bottom-nav-item span {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .bottom-nav-item:hover {
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .bottom-nav-item:hover svg {
+            stroke: var(--text-secondary);
+        }
+
+        .bottom-nav-item.active {
+            color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .bottom-nav-item.active svg {
+            stroke: var(--accent-purple);
+        }
+
+        /* Safe area for iPhone */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .bottom-nav {
+                height: calc(64px + env(safe-area-inset-bottom));
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+
+        /* Add bottom padding to main content to prevent overlap with nav */
+        .stApp > .main > .block-container {
+            padding-bottom: 80px !important;
+        }
+
+        /* Adjust FAB position to sit above bottom nav */
+        .fab-add {
+            bottom: 80px !important;
+        }
+
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .fab-add {
+                bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+            }
+        }
 
         /* ==================== ANIMATED VALUE COUNTERS ==================== */
         @keyframes countUpValue {
@@ -1381,11 +1557,28 @@ def render_fab_button():
 def render_bottom_nav(active_page: str = "home"):
     """Render the bottom navigation bar for mobile-native feel.
     
-    NOTE: Temporarily disabled due to HTML rendering issues in Streamlit Cloud.
-    The sidebar already provides navigation.
-    
     Args:
         active_page: One of "home", "holdings", "performance", "dividends"
     """
-    # Bottom nav disabled - sidebar provides navigation
-    pass
+    # Define nav items with their icons and links
+    nav_items = [
+        {"id": "home", "label": "Home", "icon": "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", "href": "/"},
+        {"id": "holdings", "label": "Holdings", "icon": "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10", "href": "/Holdings"},
+        {"id": "performance", "label": "Performance", "icon": "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6", "href": "/Performance"},
+        {"id": "dividends", "label": "Dividends", "icon": "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", "href": "/Dividends"},
+    ]
+    
+    nav_html = '<nav class="bottom-nav">'
+    for item in nav_items:
+        active_class = "active" if item["id"] == active_page else ""
+        nav_html += f'''
+        <a href="{item["href"]}" class="bottom-nav-item {active_class}" target="_self">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="{item["icon"]}"/>
+            </svg>
+            <span>{item["label"]}</span>
+        </a>
+        '''
+    nav_html += '</nav>'
+    
+    st.markdown(nav_html, unsafe_allow_html=True)

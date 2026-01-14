@@ -7,7 +7,7 @@ import streamlit as st
 import pandas as pd
 from utils import supabase_client as db
 from utils.auth import check_password
-from utils.styles import apply_styles, section_label, page_header, get_daruma_logo, render_bottom_nav
+from utils.styles import apply_styles, section_label, page_header, get_daruma_logo, render_bottom_nav, render_fab_button
 
 st.set_page_config(
     page_title="Holdings - Daruma",
@@ -52,25 +52,14 @@ def get_holdings():
 def get_logo_url(ticker: str, asset_type: str) -> str:
     """Get logo URL for a ticker. Returns URL for stocks/ETFs/crypto."""
     ticker_lower = ticker.lower()
+    ticker_upper = ticker.upper()
 
-    # Crypto logos from CoinGecko CDN (common coins)
-    crypto_ids = {
-        'btc': 'bitcoin', 'eth': 'ethereum', 'sol': 'solana', 'ada': 'cardano',
-        'dot': 'polkadot', 'link': 'chainlink', 'avax': 'avalanche-2', 'matic': 'matic-network',
-        'atom': 'cosmos', 'uni': 'uniswap', 'aave': 'aave', 'ltc': 'litecoin',
-        'xrp': 'ripple', 'doge': 'dogecoin', 'shib': 'shiba-inu', 'bnb': 'binancecoin',
-        'ewt': 'energy-web-token', 'near': 'near', 'algo': 'algorand', 'xlm': 'stellar',
-        'vet': 'vechain', 'fil': 'filecoin', 'theta': 'theta-token', 'ftm': 'fantom',
-        'sand': 'the-sandbox', 'mana': 'decentraland', 'axs': 'axie-infinity',
-    }
+    # Crypto logos from CoinCap (uses symbols directly)
+    if asset_type == 'CRYPTO':
+        return f"https://assets.coincap.io/assets/icons/{ticker_lower}@2x.png"
 
-    if asset_type == 'CRYPTO' and ticker_lower in crypto_ids:
-        coin_id = crypto_ids[ticker_lower]
-        return f"https://assets.coingecko.com/coins/images/1/small/{coin_id}.png"
-
-    # For stocks and ETFs, use multiple fallback sources
-    # Primary: Financial Modeling Prep (good coverage)
-    return f"https://financialmodelingprep.com/image-stock/{ticker.upper()}.png"
+    # For stocks and ETFs, use Financial Modeling Prep
+    return f"https://financialmodelingprep.com/image-stock/{ticker_upper}.png"
 
 
 def render_holding_card(h: dict):
@@ -260,6 +249,9 @@ def main():
     # Holdings list
     for h in holdings:
         render_holding_card(h)
+    
+    # Floating Action Button
+    render_fab_button()
     
     # Bottom Navigation Bar
     render_bottom_nav(active_page="holdings")

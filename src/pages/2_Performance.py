@@ -10,7 +10,7 @@ from datetime import datetime, date
 import numpy as np
 from utils import supabase_client as db
 from utils.auth import check_password
-from utils.styles import apply_styles, section_label, page_header, get_chart_layout, CHART_COLORS, get_daruma_logo, render_bottom_nav
+from utils.styles import apply_styles, section_label, page_header, get_chart_layout, CHART_COLORS, get_daruma_logo, render_bottom_nav, render_fab_button
 
 st.set_page_config(
     page_title="Performance - Daruma",
@@ -166,6 +166,8 @@ def create_performance_chart(data: dict):
         margin=dict(l=5, r=5, t=20, b=30),
         yaxis=dict(showgrid=True, gridcolor='rgba(148, 163, 184, 0.08)', tickprefix='$', tickfont=dict(size=10)),
         xaxis=dict(tickfont=dict(size=10)),
+        hoverdistance=100,
+        dragmode=False,  # Disable drag on mobile for better touch
     )
     fig.update_layout(**layout)
 
@@ -213,23 +215,15 @@ def main():
     <p class="page-subtitle">Track your investment returns over time</p>
     """, unsafe_allow_html=True)
 
-    # Period selector - 4+3 layout for mobile
+    # Period selector - single row for consistency with Home page
     if 'perf_period' not in st.session_state:
         st.session_state.perf_period = '1M'
 
     periods = ['1D', '1W', '1M', '3M', 'YTD', '1Y', 'ALL']
 
-    cols1 = st.columns(4)
-    for i, period in enumerate(periods[:4]):
-        with cols1[i]:
-            btn_type = "primary" if st.session_state.perf_period == period else "secondary"
-            if st.button(period, key=f"perf_{period}", type=btn_type, use_container_width=True):
-                st.session_state.perf_period = period
-                st.rerun()
-
-    cols2 = st.columns(4)
-    for i, period in enumerate(periods[4:]):
-        with cols2[i]:
+    cols = st.columns(7)
+    for i, period in enumerate(periods):
+        with cols[i]:
             btn_type = "primary" if st.session_state.perf_period == period else "secondary"
             if st.button(period, key=f"perf_{period}", type=btn_type, use_container_width=True):
                 st.session_state.perf_period = period
@@ -291,7 +285,11 @@ def main():
     # Chart
     section_label("Portfolio Evolution")
     chart = create_performance_chart(data)
-    st.plotly_chart(chart, use_container_width=True, config={'displayModeBar': False})
+    st.plotly_chart(chart, use_container_width=True, config={
+        'displayModeBar': False,
+        'scrollZoom': False,
+        'staticPlot': False,
+    })
 
     st.markdown("---")
 
@@ -313,6 +311,9 @@ def main():
             st.dataframe(df, use_container_width=True, hide_index=True)
     else:
         st.info("No holdings data available. Add transactions to see performance by asset.")
+    
+    # Floating Action Button
+    render_fab_button()
     
     # Bottom Navigation Bar
     render_bottom_nav(active_page="performance")

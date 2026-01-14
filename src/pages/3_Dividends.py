@@ -9,7 +9,7 @@ import pandas as pd
 from datetime import datetime
 from utils import supabase_client as db
 from utils.auth import check_password
-from utils.styles import apply_styles, section_label, page_header, get_chart_layout, CHART_COLORS, get_daruma_logo, render_bottom_nav
+from utils.styles import apply_styles, section_label, page_header, get_chart_layout, CHART_COLORS, get_daruma_logo, render_bottom_nav, render_fab_button
 
 st.set_page_config(
     page_title="Dividends - Daruma",
@@ -259,6 +259,9 @@ def main():
             df['amount'] = df['amount'].apply(lambda x: f"${x:,.2f}")
             df.columns = ['Ticker', 'Total Received', 'Payments']
             st.dataframe(df, use_container_width=True, hide_index=True)
+    
+    # Floating Action Button
+    render_fab_button()
     
     # Bottom Navigation Bar
     render_bottom_nav(active_page="dividends")

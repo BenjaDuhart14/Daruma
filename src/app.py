@@ -17,24 +17,14 @@ from utils.styles import apply_styles, get_chart_layout, section_label, page_hea
 def get_logo_url(ticker: str, asset_type: str) -> str:
     """Get logo URL for a ticker. Returns URL for stocks/ETFs/crypto."""
     ticker_lower = ticker.lower()
+    ticker_upper = ticker.upper()
 
-    # Crypto logos from CoinGecko CDN (common coins)
-    crypto_ids = {
-        'btc': 'bitcoin', 'eth': 'ethereum', 'sol': 'solana', 'ada': 'cardano',
-        'dot': 'polkadot', 'link': 'chainlink', 'avax': 'avalanche-2', 'matic': 'matic-network',
-        'atom': 'cosmos', 'uni': 'uniswap', 'aave': 'aave', 'ltc': 'litecoin',
-        'xrp': 'ripple', 'doge': 'dogecoin', 'shib': 'shiba-inu', 'bnb': 'binancecoin',
-        'ewt': 'energy-web-token', 'near': 'near', 'algo': 'algorand', 'xlm': 'stellar',
-        'vet': 'vechain', 'fil': 'filecoin', 'theta': 'theta-token', 'ftm': 'fantom',
-        'sand': 'the-sandbox', 'mana': 'decentraland', 'axs': 'axie-infinity',
-    }
-
-    if asset_type == 'CRYPTO' and ticker_lower in crypto_ids:
-        coin_id = crypto_ids[ticker_lower]
-        return f"https://assets.coingecko.com/coins/images/1/small/{coin_id}.png"
+    # Crypto logos from CoinCap (uses symbols directly)
+    if asset_type == 'CRYPTO':
+        return f"https://assets.coincap.io/assets/icons/{ticker_lower}@2x.png"
 
     # For stocks and ETFs, use Financial Modeling Prep
-    return f"https://financialmodelingprep.com/image-stock/{ticker.upper()}.png"
+    return f"https://financialmodelingprep.com/image-stock/{ticker_upper}.png"
 
 # Page config - use Daruma favicon
 st.set_page_config(
@@ -214,7 +204,7 @@ def create_portfolio_chart(period: str, current_value: float = 0, total_cost: fl
             name='Current'
         ))
 
-    # Layout - mobile optimized with crosshair spikes
+    # Layout - mobile optimized with touch-friendly interactions
     layout = get_chart_layout(height=220)
     layout.update(
         margin=dict(l=5, r=5, t=5, b=30),
@@ -228,7 +218,7 @@ def create_portfolio_chart(period: str, current_value: float = 0, total_cost: fl
             spikethickness=1,
             spikedash='solid',
             spikemode='across',
-            spikesnap='cursor'
+            spikesnap='data'
         ),
         yaxis=dict(
             showgrid=True, 
@@ -241,10 +231,12 @@ def create_portfolio_chart(period: str, current_value: float = 0, total_cost: fl
             spikethickness=1,
             spikedash='solid',
             spikemode='across',
-            spikesnap='cursor'
+            spikesnap='data'
         ),
         hovermode='x unified',
-        spikedistance=-1,
+        spikedistance=100,
+        hoverdistance=100,
+        dragmode=False,  # Disable drag on mobile for better touch
     )
     fig.update_layout(**layout)
 
@@ -472,31 +464,26 @@ def main():
     if not data['connected']:
         st.warning("⚠️ Not connected to database. Please check your Supabase credentials.")
 
-    # Main metrics - 2x2 grid for mobile compatibility
+    # Main metrics - Hero card for Total Value, then 3-column grid
     pnl_class = "gain" if data['total_pnl'] >= 0 else "loss"
     sign = "+" if data['total_pnl'] >= 0 else ""
     asset_count = len(data['holdings'])
 
-    row1_col1, row1_col2 = st.columns(2)
-    with row1_col1:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-label">Total Value</div>
-            <div class="metric-value-large">${data['total_value']:,.0f}</div>
+    # Hero metric card - Total Value (full width, prominent)
+    st.markdown(f"""
+    <div class="metric-card-hero">
+        <div class="metric-label">Total Portfolio Value</div>
+        <div class="metric-value-hero">${data['total_value']:,.0f}</div>
+        <div class="metric-hero-change {pnl_class}">
+            <span>{sign}${abs(data['total_pnl']):,.0f}</span>
+            <span class="pct">({sign}{data['total_pnl_pct']:.1f}%)</span>
         </div>
-        """, unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
 
-    with row1_col2:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-label">Total P&L</div>
-            <div class="metric-value" style="color: var(--{pnl_class});">{sign}${data['total_pnl']:,.0f}</div>
-            <span class="metric-change {pnl_class}">{sign}{data['total_pnl_pct']:.1f}%</span>
-        </div>
-        """, unsafe_allow_html=True)
-
-    row2_col1, row2_col2 = st.columns(2)
-    with row2_col1:
+    # Secondary metrics - 3 columns
+    col1, col2, col3 = st.columns(3)
+    with col1:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">Invested</div>
@@ -504,7 +491,15 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
-    with row2_col2:
+    with col2:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-label">P&L</div>
+            <div class="metric-value" style="color: var(--{pnl_class});">{sign}${data['total_pnl']:,.0f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col3:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">Assets</div>
@@ -558,7 +553,11 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    st.plotly_chart(chart, use_container_width=True, config={'displayModeBar': False})
+    st.plotly_chart(chart, use_container_width=True, config={
+        'displayModeBar': False,
+        'scrollZoom': False,
+        'staticPlot': False,
+    })
     
     # Show notice if no historical data
     if not chart_data.get('has_history', True):
